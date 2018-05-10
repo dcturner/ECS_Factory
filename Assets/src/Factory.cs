@@ -2,15 +2,38 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Factory : MonoBehaviour {
+public class Factory : MonoBehaviour
+{
+	private int tick = 0;
+	public float tickRate = 0.2f;
+	private float t;
 
-	// Use this for initialization
-	void Start () {
-		
+	private Storage[] storage;
+	private int storageCount;
+
+	private void Awake()
+	{
+		t = tickRate;
+		storage = FindObjectsOfType<Storage>();
+		storageCount = storage.Length;
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+
+	private void Update()
+	{
+		if(Timer.TimerReachedZero(ref t))
+		{
+			Tick();
+		}
+	}
+
+	private void Tick()
+	{
+		t = tickRate;
+		tick++;
+
+		for (int i = 0; i < storageCount; i++)
+		{
+			storage[i].Tick();
+		}
 	}
 }
