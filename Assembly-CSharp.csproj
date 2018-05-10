@@ -56,10 +56,10 @@
     <Compile Include="Assets\src\CoreTypes.cs" />
     <Compile Include="Assets\src\Factory.cs" />
     <Reference Include="UnityEditor.StandardEvents">
-      <HintPath>/Users/dcturner/Documents/KerShoot/git/Unity/ECS_Factory/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
+      <HintPath>/Users/dcturner/Documents/KerShoot/git/ECS_Factory/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>
     <Reference Include="Unity.PackageManagerUI.Editor">
-      <HintPath>/Users/dcturner/Documents/KerShoot/git/Unity/ECS_Factory/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
+      <HintPath>/Users/dcturner/Documents/KerShoot/git/ECS_Factory/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>/Applications/Unity/Hub/Editor/2018.1.0b13/Unity.app/Contents/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
