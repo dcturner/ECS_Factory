@@ -53,42 +53,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\src\Behaviours\Timer.cs" />
     <Compile Include="Assets\src\CoreTypes.cs" />
     <Compile Include="Assets\src\Factory.cs" />
     <Compile Include="Assets\src\Helpers\GizmoHelpers.cs" />
+    <Compile Include="Assets\src\Helpers\Timer.cs" />
     <Compile Include="Assets\src\Storage.cs" />
+    <Compile Include="Assets\src\VehiclePart.cs" />
+    <Compile Include="Assets\src\Vehicles\VehicleDesign.cs" />
+    <Compile Include="Assets\src\Vehicles\VehiclePart_Config.cs" />
     <Compile Include="Assets\src\Workshop.cs" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\MonoBehaviour.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Editor Window.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Function Call From Menu.js.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Scriptable Wizard.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Scriptable Object.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Empty Class.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\MonoBehaviour.functions.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Custom Editor.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Asset Postprocessor.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Empty Class.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Custom Editor.js.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\AssetPostprocessor.functions.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Empty Class.js.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Custom Editor.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\EditorWindow.functions.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\ScriptableWizard.functions.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Editor Window.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\ScriptableObject.functions.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Editor.functions.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\MonoBehaviour.js.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Scriptable Wizard.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Asset Postprocessor.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Asset Postprocessor.js.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Scriptable Wizard.js.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Scriptable Object.js.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Function Call From Menu.cs.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\MonoBehaviour.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Scriptable Object.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Function Call From Menu.boo.txt" />
-    <None Include="Assets\CreateScriptDialog\SmartScriptTemplates\Editor Window.js.txt" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>/Users/dcturner/Documents/KerShoot/git/ECS_Factory/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>

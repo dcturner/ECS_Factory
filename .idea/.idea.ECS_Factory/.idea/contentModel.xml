@@ -2,58 +2,21 @@
 <project version="4">
   <component name="ContentModelStore">
     <e p="$PROJECT_DIR$" t="IncludeRecursive">
-      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="CreateScriptDialog" t="Include">
-          <e p="Editor" t="Include">
-            <e p="NewScriptGenerator.cs" t="Include" />
-            <e p="NewScriptWindow.cs" t="Include" />
-            <e p="ScriptPrescription.cs" t="Include" />
-          </e>
-          <e p="SmartScriptTemplates" t="Include">
-            <e p="Asset Postprocessor.boo.txt" t="Include" />
-            <e p="Asset Postprocessor.cs.txt" t="Include" />
-            <e p="Asset Postprocessor.js.txt" t="Include" />
-            <e p="AssetPostprocessor.functions.txt" t="Include" />
-            <e p="Custom Editor.boo.txt" t="Include" />
-            <e p="Custom Editor.cs.txt" t="Include" />
-            <e p="Custom Editor.js.txt" t="Include" />
-            <e p="Editor Window.boo.txt" t="Include" />
-            <e p="Editor Window.cs.txt" t="Include" />
-            <e p="Editor Window.js.txt" t="Include" />
-            <e p="Editor.functions.txt" t="Include" />
-            <e p="EditorWindow.functions.txt" t="Include" />
-            <e p="Empty Class.boo.txt" t="Include" />
-            <e p="Empty Class.cs.txt" t="Include" />
-            <e p="Empty Class.js.txt" t="Include" />
-            <e p="Function Call From Menu.boo.txt" t="Include" />
-            <e p="Function Call From Menu.cs.txt" t="Include" />
-            <e p="Function Call From Menu.js.txt" t="Include" />
-            <e p="MonoBehaviour.boo.txt" t="Include" />
-            <e p="MonoBehaviour.cs.txt" t="Include" />
-            <e p="MonoBehaviour.functions.txt" t="Include" />
-            <e p="MonoBehaviour.js.txt" t="Include" />
-            <e p="Scriptable Object.boo.txt" t="Include" />
-            <e p="Scriptable Object.cs.txt" t="Include" />
-            <e p="Scriptable Object.js.txt" t="Include" />
-            <e p="Scriptable Wizard.boo.txt" t="Include" />
-            <e p="Scriptable Wizard.cs.txt" t="Include" />
-            <e p="Scriptable Wizard.js.txt" t="Include" />
-            <e p="ScriptableObject.functions.txt" t="Include" />
-            <e p="ScriptableWizard.functions.txt" t="Include" />
-          </e>
-        </e>
         <e p="src" t="Include">
-          <e p="Behaviours" t="Include">
-            <e p="Timer.cs" t="Include" />
-          </e>
           <e p="CoreTypes.cs" t="Include" />
           <e p="Factory.cs" t="Include" />
           <e p="Helpers" t="Include">
             <e p="GizmoHelpers.cs" t="Include" />
+            <e p="Timer.cs" t="Include" />
           </e>
           <e p="Storage.cs" t="Include" />
+          <e p="VehiclePart.cs" t="Include" />
+          <e p="Vehicles" t="Include">
+            <e p="VehicleDesign.cs" t="Include" />
+            <e p="VehiclePart_Config.cs" t="Include" />
+          </e>
           <e p="Workshop.cs" t="Include" />
         </e>
       </e>
