@@ -259,6 +259,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 20
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -371,13 +372,14 @@ MonoBehaviour:
   storageName: RAM
   colour: {r: 0, g: 0, b: 0, a: 1}
   storageWidth: 121
-  storageHeight: 40
+  storageHeight: 43
   capacity: 1000000
   usedSpace: 0
   freeSpace: 0
   currentState: 0
   taskDuration: 200
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -554,6 +556,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 3
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -581,7 +584,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 398428902}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 15, y: 0, z: 37}
+  m_LocalPosition: {x: 16, y: 0, z: 37}
   m_LocalScale: {x: 10, y: 1, z: 50}
   m_Children: []
   m_Father: {fileID: 6441911}
@@ -608,6 +611,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 10000
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -662,6 +666,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 3
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -716,6 +721,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 3
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -770,6 +776,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 1
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -873,6 +880,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 40
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -976,6 +984,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 20
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -1030,6 +1039,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 1
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -1084,6 +1094,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 1
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -1138,6 +1149,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 20
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -1192,6 +1204,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 3
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -1246,6 +1259,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 20
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []
@@ -1349,6 +1363,7 @@ MonoBehaviour:
   currentState: 0
   taskDuration: 1
   taskStep: 0
+  storageLocations: []
   factor: 0
   contents: []
   pending_STORE: []

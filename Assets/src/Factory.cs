@@ -62,6 +62,7 @@ public class Factory : SerializedMonoBehaviour
 		
 		// summarise order and sling it into RAM
 		Debug.Log("Part totals...");
+		int index = 0;
 		foreach (KeyValuePair<VehiclePart_Config,int> _PAIR in requiredParts)
 		{
 			VehiclePart_Config _PART = _PAIR.Key;
@@ -69,11 +70,18 @@ public class Factory : SerializedMonoBehaviour
 			GameObject _PART_PREFAB = _PART.prefab_part;
 			parts.Add(_PART, new List<VehiclePart>());
 			List<VehiclePart> _LIST = parts[_PART];
-			Debug.Log(_PART.name + " x " + _TOTAL);	
+			Debug.Log(_PART.name + " x " + _TOTAL);
+
+			
 			for (int i = 0; i < _TOTAL; i++)
 			{
 				GameObject _part_OBJ = (GameObject) Instantiate(_PART_PREFAB, new Vector3(i*0.05f, 0f, 0f), Quaternion.identity);
 				_LIST.Add( _part_OBJ.GetComponent<VehiclePart>());
+				if (i < RAM.capacity)
+				{
+					_part_OBJ.transform.position = RAM.storageLocations[index];
+					index++;
+				}
 			}
 		}
 	}

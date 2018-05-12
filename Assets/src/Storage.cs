@@ -14,6 +14,7 @@ public class Storage : MonoBehaviour
     public int taskDuration;
     public int taskStep;
 
+    [HideInInspector] public List<Vector3> storageLocations;
     [HideInInspector] public float factor;
     [HideInInspector] public List<VehiclePart_Config> contents;
     [HideInEditorMode] public List<VehiclePart_Config> pending_STORE, pending_SEND;
@@ -35,6 +36,23 @@ public class Storage : MonoBehaviour
 
     private void DefineStorageLayout()
     {
+        storageLocations = new List<Vector3>();
+        
+        for (int columnIndex = 0; columnIndex < storageWidth; columnIndex++)
+        {
+            float x = (columnIndex * 1f);
+            if (columnIndex % 8 > 0)
+            {
+                for (int rowIndex = 0; rowIndex < storageHeight; rowIndex++)
+                {
+                    float z = rowIndex * 1f;
+                    if (rowIndex % 3 > 0)
+                    {
+                        storageLocations.Add(transform.position + new Vector3(x + 0.5f, 0f, z + 0.5f));
+                    }
+                }
+            }
+        }
     }
 
     private void ChangeState(StorageState _newState)
@@ -119,7 +137,7 @@ public class Storage : MonoBehaviour
                     float z = rowIndex * 1f;
                     if (rowIndex % 3 > 0)
                     {
-                        Gizmos.DrawCube(_POS + new Vector3(x + 0.5f, 0f, z + 0.5f), new Vector3(0.75f, 0.05f,0.75f));
+                        Gizmos.DrawCube(_POS + new Vector3(x + 0.5f, 0f, z + 0.5f), new Vector3(0.75f, 0.01f,0.75f));
                     }
                 }
             }
