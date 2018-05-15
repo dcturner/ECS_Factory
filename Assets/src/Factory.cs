@@ -11,7 +11,7 @@ public class Factory : SerializedMonoBehaviour
 	[PropertyRange(0.0000001f, 1f)]
 	public float tickRate = 0.1f;
 	private float t;
-
+	
 	public Storage HD, RAM, L3;
 	private Storage[] storage;
 	private int storageCount;
@@ -104,4 +104,15 @@ public class Factory : SerializedMonoBehaviour
 			storage[i].Tick();
 		}
 	}
+	
+	#region ------------------------- < GIZMOS METHODS
+
+	[Button("Toggle Storage Cell Gizmos")]
+	public void GIZMOS_storage_showCells()
+	{
+		Storage.GIZMOS_DRAW_CELLS = !Storage.GIZMOS_DRAW_CELLS;
+	}
+
+	#endregion ------------------------ GIZMOS METHODS >
+
 }
