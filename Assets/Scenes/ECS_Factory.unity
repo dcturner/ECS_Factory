@@ -205,6 +205,7 @@ MonoBehaviour:
     - Name: CompletedVehicles
       Entry: 6
       Data: 
+  factoryMode: 0
   tickRate: 0.361
   HD: {fileID: 398428904}
   RAM: {fileID: 268225004}
@@ -361,7 +362,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 268225002}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10, y: 0, z: 58}
+  m_LocalPosition: {x: 35, y: 0, z: 140}
   m_LocalScale: {x: 15, y: 1, z: 50}
   m_Children: []
   m_Father: {fileID: 6441911}
@@ -382,18 +383,18 @@ MonoBehaviour:
   colour: {r: 0, g: 0, b: 0, a: 1}
   taskDuration: 1
   clusters_x: 4
-  clusters_y: 20
-  clusters_z: 20
-  cluster_width: 8
+  clusters_y: 1
+  clusters_z: 2
+  cluster_width: 32
   cluster_height: 1
-  cluster_depth: 2
-  gutterX: 1
+  cluster_depth: 8
+  gutterX: 5
   gutterY: 1
   gutterZ: 1
   usedSpace: 0
   freeSpace: 0
-  capacity: 25600
-  clusterCapacity: 16
+  capacity: 2048
+  clusterCapacity: 256
   taskStep: 0
   currentState: 0
   storageLocations: []
@@ -567,19 +568,19 @@ MonoBehaviour:
   storageName: HD
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
   taskDuration: 10000
-  clusters_x: 15
-  clusters_y: 10
-  clusters_z: 15
-  cluster_width: 8
+  clusters_x: 4
+  clusters_y: 1
+  clusters_z: 2
+  cluster_width: 32
   cluster_height: 1
-  cluster_depth: 2
-  gutterX: 2
+  cluster_depth: 4
+  gutterX: 5
   gutterY: 2
-  gutterZ: 2
+  gutterZ: 3
   usedSpace: 0
   freeSpace: 0
-  capacity: 36000
-  clusterCapacity: 16
+  capacity: 1024
+  clusterCapacity: 128
   taskStep: 0
   currentState: 0
   storageLocations: []

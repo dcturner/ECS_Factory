@@ -179,6 +179,7 @@
             <e p="Timer.cs" t="Include" />
             <e p="VehiclePart_List.cs" t="Include" />
           </e>
+          <e p="Mechanic.cs" t="Include" />
           <e p="Storage.cs" t="Include" />
           <e p="VehiclePart.cs" t="Include" />
           <e p="Vehicles" t="Include">
