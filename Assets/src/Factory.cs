@@ -88,8 +88,6 @@ public class Factory : SerializedMonoBehaviour
             parts.Add(_PART, new List<VehiclePart>());
             List<VehiclePart> _LIST = parts[_PART];
             Debug.Log(_PART.name + " x " + _TOTAL);
-
-
             for (int i = 0; i < _TOTAL; i++)
             {
                 GameObject _part_OBJ =
@@ -97,7 +95,7 @@ public class Factory : SerializedMonoBehaviour
                 _LIST.Add(_part_OBJ.GetComponent<VehiclePart>());
                 if (i < RAM.capacity)
                 {
-                    _part_OBJ.transform.position = RAM.storageLocations[index];
+                    _part_OBJ.transform.position = L3.storageLocations[index];
                     index++;
                 }
             }
@@ -109,7 +107,15 @@ public class Factory : SerializedMonoBehaviour
         switch (factoryMode)
         {
             case FactoryMode.OOP:
-                
+                VehicleDesign _DESIGN = vehicleOrder.Keys.First();
+                List<VehiclePart_Config> _PARTS = new List<VehiclePart_Config>();
+                Debug.Log(_DESIGN.designName);
+                foreach (VehicleDesign_RequiredPart _PART in _DESIGN.requiredParts)
+                {
+                    _PARTS.Add(_PART.partConfig);
+                }
+                    workshops[0].AddTask(_DESIGN, _PARTS.ToArray(), vehicleOrder[_DESIGN], true);
+                workshops[0].N
                 break;
             case FactoryMode.DOD:
                 break;

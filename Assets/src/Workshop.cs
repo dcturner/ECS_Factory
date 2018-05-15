@@ -10,23 +10,18 @@ public class Workshop : MonoBehaviour
 	public Storage L2, L1, REG;
 
 	private List<WorkshopTask> tasklist;
+	private WorkshopTask currentTask;
 
 	private void Awake()
 	{
 		tasklist = new List<WorkshopTask>();
 	}
 
-	public void AddTask(VehicleDesign _design, VehiclePart_Config _vehiclePart, int _iterations, bool _appendOnCompletion)
+	public void AddTask(VehicleDesign _design, VehiclePart_Config[] _vehicleParts, int _iterations, bool _appendOnCompletion)
 	{
-		List<VehicleDesign_RequiredPart> _partList = new List<VehicleDesign_RequiredPart>();
-		foreach (VehicleDesign_RequiredPart _PART in _design.requiredParts)
-		{
-			if (_PART.partConfig == _vehiclePart)
-			{
-				_partList.Add(_PART);
-			}
-		}
-		tasklist.Add(new WorkshopTask(_design, _partList.ToArray(),_iterations, _appendOnCompletion));
+		tasklist.Add(new WorkshopTask(_design, _vehicleParts, _iterations, _appendOnCompletion));
+		Debug.Log("workshop_" + workshopIndex + ", added: " + tasklist[tasklist.Count-1].Log());
+		currentTask = tasklist[0];
 	}
 
 	private void OnDrawGizmos()
@@ -44,6 +39,10 @@ public class Workshop : MonoBehaviour
 
 	private void Tick()
 	{
+		if (tasklist.Count > 0)
+		{
+			
+		}
 	}
 
 	private void RequestPart()
@@ -54,15 +53,25 @@ public class Workshop : MonoBehaviour
 public struct WorkshopTask
 {
 	public VehicleDesign design;
-	public VehicleDesign_RequiredPart[] requiredParts;
+	public VehiclePart_Config[] parts;
 	public bool appendOnCompletion;
 	public int iterations;
 
-	public WorkshopTask(VehicleDesign _design, VehicleDesign_RequiredPart[] _requiredParts, int _iterations, bool _appendOnCompletion)
+	public WorkshopTask(VehicleDesign _design, VehiclePart_Config[] _parts, int _iterations, bool _appendOnCompletion)
 	{
 		design = _design;
-		requiredParts = _requiredParts;
+		parts = _parts;
 		iterations = _iterations;
 		appendOnCompletion = _appendOnCompletion;
+	}
+
+	public string Log()
+	{
+		string _PART_LIST = "";
+		foreach (VehiclePart_Config _PART in parts)
+		{
+			_PART_LIST += _PART.name + " | ";
+		}
+		return design.designName + ": " + iterations + " x  >>> " + _PART_LIST;
 	}
 }

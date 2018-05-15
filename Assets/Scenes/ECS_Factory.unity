@@ -192,7 +192,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 3
-      Data: 4
+      Data: 10
     - Name: 
       Entry: 8
       Data: 
@@ -206,7 +206,7 @@ MonoBehaviour:
       Entry: 6
       Data: 
   factoryMode: 0
-  tickRate: 0.361
+  tickRate: 0.066
   HD: {fileID: 398428904}
   RAM: {fileID: 268225004}
   L3: {fileID: 991516663}
@@ -362,7 +362,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 268225002}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 35, y: 0, z: 140}
+  m_LocalPosition: {x: 35, y: 0, z: 120}
   m_LocalScale: {x: 15, y: 1, z: 50}
   m_Children: []
   m_Father: {fileID: 6441911}
@@ -381,7 +381,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   storageName: RAM
   colour: {r: 0, g: 0, b: 0, a: 1}
-  taskDuration: 1
+  taskDuration: 100
   clusters_x: 4
   clusters_y: 1
   clusters_z: 2
@@ -548,7 +548,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 398428902}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 36, y: 0, z: 124}
+  m_LocalPosition: {x: 36, y: 0, z: 139}
   m_LocalScale: {x: 10, y: 1, z: 50}
   m_Children: []
   m_Father: {fileID: 6441911}
@@ -567,7 +567,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   storageName: HD
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
-  taskDuration: 10000
+  taskDuration: 500
   clusters_x: 4
   clusters_y: 1
   clusters_z: 2

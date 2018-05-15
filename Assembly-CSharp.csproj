@@ -81,7 +81,6 @@
     <Compile Include="Assets\src\Helpers\GizmoHelpers.cs" />
     <Compile Include="Assets\src\Helpers\Timer.cs" />
     <Compile Include="Assets\src\Helpers\VehiclePart_List.cs" />
-    <Compile Include="Assets\src\Mechanic.cs" />
     <Compile Include="Assets\src\Storage.cs" />
     <Compile Include="Assets\src\VehiclePart.cs" />
     <Compile Include="Assets\src\Vehicles\Vehicle.cs" />

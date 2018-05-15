@@ -328,6 +328,9 @@
     <Reference Include="Sirenix.OdinInspector.Attributes">
       <HintPath>/Users/dcturner/Documents/KerShoot/git/ECS_Factory/Assets/Plugins/Sirenix/Assemblies/Sirenix.OdinInspector.Attributes.dll</HintPath>
     </Reference>
+    <Reference Include="ConsolePro.Editor">
+      <HintPath>/Users/dcturner/Documents/KerShoot/git/ECS_Factory/Assets/ConsolePro/Editor/ConsolePro.Editor.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.Advertisements">
       <HintPath>/Users/dcturner/Library/Unity/cache/packages/packages.unity.com/com.unity.ads@2.0.4/UnityEngine.Advertisements.dll</HintPath>
     </Reference>
@@ -348,9 +351,6 @@
     </Reference>
     <Reference Include="UnityEngine.StandardEvents">
       <HintPath>/Users/dcturner/Library/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll</HintPath>
-    </Reference>
-    <Reference Include="ConsolePro.Editor">
-      <HintPath>/Users/dcturner/Documents/KerShoot/git/ECS_Factory/Assets/ConsolePro/Editor/ConsolePro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib">
       <HintPath>/Applications/Unity/Hub/Editor/2018.1.0b13/Unity.app/Contents/MonoBleedingEdge/lib/mono/2.0-api/mscorlib.dll</HintPath>

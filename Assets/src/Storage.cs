@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class Storage : MonoBehaviour
 {
-    public static bool GIZMOS_DRAW_CELLS = true;
+    public static bool GIZMOS_DRAW_CELLS = false;
     
     public string storageName;
     public Color colour;
@@ -59,8 +59,11 @@ public class Storage : MonoBehaviour
         Vector3 cellSize = new Vector3(0.75f, 0.75f, 0.75f);
         clusterCapacity = cluster_width * cluster_height * cluster_depth;
         capacity = clusterCapacity * (clusters_x * clusters_y * clusters_z);
-
-
+        
+        width = (clusters_x * cluster_width) + ((clusters_x - 1) * gutterX);
+        height = (clusters_y * cluster_height) + ((clusters_y - 1) * gutterY);
+        depth = (clusters_z * cluster_depth) + ((clusters_z - 1) * gutterZ);
+        
         int wrapX = cluster_width + (gutterX);
         int wrapY = cluster_height + (gutterY);
         int wrapZ = cluster_depth + (gutterZ);
@@ -84,6 +87,7 @@ public class Storage : MonoBehaviour
                 }
             }
         }
+        Debug.Log(storageName  + " locations: " + storageLocations.Count);
     }
 
     private void ChangeState(StorageState _newState)
@@ -212,7 +216,7 @@ public class Storage : MonoBehaviour
                 Gizmos.color = colour;
                 foreach (Vector3 _AISLE_SPACE in aisleSpaces)
                 {
-                    Gizmos_DrawCell(_AISLE_SPACE, cellSize);
+                    Gizmos_DrawCell(_AISLE_SPACE, cellSize*0.25f);
                 }
             }
 
