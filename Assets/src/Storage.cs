@@ -14,8 +14,9 @@ public class Storage : MonoBehaviour
 
     public string storageName;
     public Storage getsPartsFrom;
+    private Storage sendingPartsTo;
     public Color colour;
-    [PropertyRange(1, 100000)] public int taskDuration;
+    [PropertyRange(1, 1000)] public int taskDuration;
 
     // Total number of clusters along XYZ
     [TabGroup("Total")] [PropertyRange(1, 100)]
@@ -37,15 +38,13 @@ public class Storage : MonoBehaviour
     [HideInInspector] public List<Vector3> aisleSpaces;
     [HideInInspector] public float factor;
     [HideInInspector] public List<VehiclePart> contents;
-    [HideInEditorMode] public List<VehiclePart[]> pending_STORE, pending_SEND;
+    [HideInEditorMode] public VehiclePart[] pending_STORE, pending_SEND;
 
     // Storage GRID layout
     private int cellsX, cellsY, cellsZ;
 
     private void Awake()
     {
-        pending_STORE = new List<VehiclePart[]>();
-        pending_SEND = new List<VehiclePart[]>();
         DefineStorageLayout();
     }
 
@@ -103,6 +102,20 @@ public class Storage : MonoBehaviour
         {
             currentState = _newState;
             Debug.Log(ToString() + currentState);
+            switch (currentState)
+            {
+                case StorageState.IDLE:
+                    if (pending_SEND!=null)
+                    {
+                        ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
+                    }
+
+                    break;
+                case StorageState.WAITING_FOR_DELIVERY:
+                    break;
+                case StorageState.FETCHING_REQUESTED_ITEMS:
+                    break;
+            }
         }
     }
 
@@ -122,26 +135,31 @@ public class Storage : MonoBehaviour
 
     public void RequestPart(VehiclePart_Config _part, int _maxParts, Storage _deliverTo)
     {
-        Debug.Log(storageName + " sourcing: " + _maxParts + " " + _part.name);
-        VehiclePart[] _partsFound = contents.Where(p => p.partConfig == _part).ToArray();
-        int _totalFound = _partsFound.Length;
-        if (_totalFound > 0)
+        if (currentState == StorageState.IDLE)
         {
-            
-                Debug.Log(storageName + " found: " + _totalFound+ " " + _part.name);
-            if (_totalFound > _maxParts)
+            Debug.Log(storageName + " sourcing: " + _maxParts + " " + _part.name + " for " + _deliverTo.storageName);
+            sendingPartsTo = _deliverTo;
+            VehiclePart[] _partsFound = contents.Where(p => p.partConfig == _part).ToArray();
+            int _totalFound = _partsFound.Length;
+            if (_totalFound > 0)
             {
-                Debug.Log("too many, trimming down to " + _maxParts);
-                Array.Resize(ref _partsFound, _maxParts);
-            }
-                pending_SEND.Add(_partsFound);
-            Debug.Log("preparing to send " + _partsFound.Length + " parts to " + _deliverTo.storageName);
+
+                Debug.Log(storageName + " found: " + _totalFound + " " + _part.name);
+                if (_totalFound > _maxParts)
+                {
+                    Debug.Log("too many, trimming down to " + _maxParts);
+                    Array.Resize(ref _partsFound, _maxParts);
+                }
+
+                pending_SEND = _partsFound;
+                Debug.Log("preparing to send " + _partsFound.Length + " parts to " + _deliverTo.storageName);
                 ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
-        }
-        else
-        {
-            ChangeState(StorageState.WAITING_FOR_DELIVERY);
-            getsPartsFrom.RequestPart(_part, _maxParts, this);
+            }
+            else
+            {
+                ChangeState(StorageState.WAITING_FOR_DELIVERY);
+                getsPartsFrom.RequestPart(_part, _maxParts, this);
+            }
         }
     }
 
@@ -166,7 +184,7 @@ public class Storage : MonoBehaviour
             case StorageState.FETCHING_REQUESTED_ITEMS:
                 if (taskStep == taskDuration)
                 {
-                    ACTION_TICK();
+                    READY_TO_DISPATCH();
                 }
                 else
                 {
@@ -179,11 +197,28 @@ public class Storage : MonoBehaviour
         factor = (float) taskStep / (float) taskDuration;
     }
 
-    private void ACTION_TICK()
+    private void READY_TO_DISPATCH()
     {
         Debug.Log(storageName + " SENDING ITEMS");
         taskStep = 0;
+        sendingPartsTo.Recieve_Parts(pending_SEND);
+        pending_SEND = null;
         ChangeState(StorageState.IDLE);
+    }
+
+    public void Recieve_Parts(VehiclePart[] _parts)
+    {
+        if (currentState == StorageState.WAITING_FOR_DELIVERY)
+        {
+            // store
+            Debug.Log(storageName +  " Recieved " + _parts.Length + " x " + _parts[0].partConfig.name);
+            ChangeState(StorageState.IDLE);
+        }
+        else
+        {
+            Debug.Log(storageName +  " Waiting to Store " + _parts.Length + " x " + _parts[0].partConfig.name);
+            pending_STORE = _parts;
+        }
     }
 
     private void OnDrawGizmos()
