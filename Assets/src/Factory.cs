@@ -16,6 +16,7 @@ public class Factory : SerializedMonoBehaviour
 {
     public static Factory INSTANCE;
     public FactoryMode factoryMode;
+    public Storage PartsDeliveredTo;
     private int tick = 0;
     [PropertyRange(0.0000001f, 1f)] public float tickRate = 0.1f;
     private float t;
@@ -25,6 +26,8 @@ public class Factory : SerializedMonoBehaviour
     private List<Workshop> workshops;
   
     private int storageCount;
+    public static int SHARED_STORAGE_CAPACITY;
+    public static int SHARED_STORAGE_CORE_SHARE;
 
     // ORDER
     // Quantity of each design to be built
@@ -47,6 +50,10 @@ public class Factory : SerializedMonoBehaviour
 
     private void Start()
     {
+        // set up SHARED STORAGE statics (L3)
+        SHARED_STORAGE_CAPACITY = L3.capacity;
+        SHARED_STORAGE_CORE_SHARE = SHARED_STORAGE_CAPACITY / workshops.Count;
+        Debug.Log("WORKSHOPS GET ["+SHARED_STORAGE_CORE_SHARE+"] of ["+SHARED_STORAGE_CAPACITY+"]");
         Get_RequiredParts();
         ScheduleTasks();
     }
@@ -79,7 +86,6 @@ public class Factory : SerializedMonoBehaviour
 
         // summarise order and sling it into RAM
         Debug.Log("Part totals...");
-        int index = 0;
         foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in requiredParts)
         {
             VehiclePart_Config _PART = _PAIR.Key;
@@ -91,15 +97,13 @@ public class Factory : SerializedMonoBehaviour
             for (int i = 0; i < _TOTAL; i++)
             {
                 GameObject _part_OBJ =
-                    (GameObject) Instantiate(_PART_PREFAB, new Vector3(i * 0.05f, 0f, 0f), Quaternion.identity);
+                    (GameObject) Instantiate(_PART_PREFAB, Vector3.zero, Quaternion.identity);
                 _LIST.Add(_part_OBJ.GetComponent<VehiclePart>());
-                if (i < RAM.capacity)
-                {
-                    _part_OBJ.transform.position = L3.storageLocations[index];
-                    index++;
-                }
+        // parts are instantiated - now lets force_quickSave them into "PartsDeliveredTo" (usually RAM)
             }
+        PartsDeliveredTo.Force_QuickSave(_LIST.ToArray());
         }
+    
     }
 
     private void ScheduleTasks()
@@ -115,7 +119,7 @@ public class Factory : SerializedMonoBehaviour
                     _PARTS.Add(_PART.partConfig);
                 }
                     workshops[0].AddTask(_DESIGN, _PARTS.ToArray(), vehicleOrder[_DESIGN], true);
-                workshops[0].N
+                workshops[0].L1.RequestPart(_PARTS[0], 8, workshops[0].REG);
                 break;
             case FactoryMode.DOD:
                 break;
@@ -141,6 +145,16 @@ public class Factory : SerializedMonoBehaviour
         }
     }
 
+    #region ------------------------- < MOVE PARTS BETWEEN STORAGE
+
+    public void OrderParts(Storage _target)
+    {
+        
+    }
+
+    #endregion ------------------------ MOVE PARTS BETWEEN STORAGE >
+
+    
     #region ------------------------- < GIZMOS METHODS
 
     [Button("Toggle Storage Cell Gizmos")]

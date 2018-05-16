@@ -206,10 +206,70 @@ MonoBehaviour:
       Entry: 6
       Data: 
   factoryMode: 0
+  PartsDeliveredTo: {fileID: 398428904}
   tickRate: 0.066
   HD: {fileID: 398428904}
   RAM: {fileID: 268225004}
   L3: {fileID: 991516663}
+--- !u!1001 &29845260
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 6441911}
+    m_Modifications:
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 36
+      objectReference: {fileID: 0}
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: -21
+      objectReference: {fileID: 0}
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114094982836714272, guid: 6c141f121dcd3422f81cb47d4144e0a9,
+        type: 2}
+      propertyPath: getsPartsFrom
+      value: 
+      objectReference: {fileID: 991516663}
+    - target: {fileID: 4408198673894938, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4831271518289280, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4401880858507428, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
+  m_IsPrefabParent: 0
 --- !u!1 &165914231
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,7 +297,7 @@ Transform:
   m_LocalScale: {x: 0.62, y: 1, z: 5.1}
   m_Children: []
   m_Father: {fileID: 1569376097}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &165914233
 MonoBehaviour:
@@ -251,6 +311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: L1
+  getsPartsFrom: {fileID: 671782275}
   colour: {r: 1, g: 0.74572635, b: 0.11764705, a: 1}
   taskDuration: 3
   clusters_x: 2
@@ -272,8 +333,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -380,6 +439,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: RAM
+  getsPartsFrom: {fileID: 398428904}
   colour: {r: 0, g: 0, b: 0, a: 1}
   taskDuration: 100
   clusters_x: 4
@@ -401,57 +461,11 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
---- !u!1 &273678384
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 273678385}
-  - component: {fileID: 273678386}
-  m_Layer: 0
-  m_Name: core_0
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &273678385
+--- !u!4 &273678385 stripped
 Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 273678384}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 36, y: 0, z: -21}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 517536280}
-  - {fileID: 1238284483}
-  - {fileID: 1393791985}
-  m_Father: {fileID: 6441911}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &273678386
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 273678384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ecc68bf97a27c4acb9342bec557e34ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  workshopIndex: 0
-  width: 21
-  height: 36
-  L2: {fileID: 1238284484}
-  L1: {fileID: 517536281}
-  REG: {fileID: 1393791986}
+  m_PrefabParentObject: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9,
+    type: 2}
+  m_PrefabInternal: {fileID: 29845260}
 --- !u!1 &282840810
 GameObject:
   m_ObjectHideFlags: 0
@@ -566,93 +580,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: HD
+  getsPartsFrom: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
   taskDuration: 500
   clusters_x: 4
   clusters_y: 1
-  clusters_z: 2
-  cluster_width: 32
-  cluster_height: 1
-  cluster_depth: 4
-  gutterX: 5
-  gutterY: 2
-  gutterZ: 3
-  usedSpace: 0
-  freeSpace: 0
-  capacity: 1024
-  clusterCapacity: 128
-  taskStep: 0
-  currentState: 0
-  storageLocations: []
-  aisleSpaces: []
-  factor: 0
-  contents: []
-  pending_STORE: []
-  pending_SEND: []
---- !u!1 &517536279
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 517536280}
-  - component: {fileID: 517536281}
-  m_Layer: 0
-  m_Name: L1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &517536280
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 517536279}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2, y: 0, z: 6}
-  m_LocalScale: {x: 0.62, y: 1, z: 5.1}
-  m_Children: []
-  m_Father: {fileID: 273678385}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &517536281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 517536279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b517bdeca03244e6b3e4735d90003d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  storageName: L1
-  colour: {r: 1, g: 0.74572635, b: 0.11764705, a: 1}
-  taskDuration: 3
-  clusters_x: 2
-  clusters_y: 1
-  clusters_z: 1
-  cluster_width: 8
-  cluster_height: 1
+  clusters_z: 12
+  cluster_width: 16
+  cluster_height: 2
   cluster_depth: 2
-  gutterX: 1
-  gutterY: 1
-  gutterZ: 1
+  gutterX: 2
+  gutterY: 2
+  gutterZ: 2
   usedSpace: 0
   freeSpace: 0
-  capacity: 32
-  clusterCapacity: 16
+  capacity: 10240
+  clusterCapacity: 64
   taskStep: 0
   currentState: 0
   storageLocations: []
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &571405062
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,7 +629,7 @@ Transform:
   m_LocalScale: {x: 4.77, y: 1, z: 5.12}
   m_Children: []
   m_Father: {fileID: 1182547519}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &571405064
 MonoBehaviour:
@@ -694,6 +643,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: L2
+  getsPartsFrom: {fileID: 991516663}
   colour: {r: 1, g: 0.43530226, b: 0.11764705, a: 1}
   taskDuration: 20
   clusters_x: 2
@@ -715,8 +665,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &671782273
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,7 +692,7 @@ Transform:
   m_LocalScale: {x: 4.77, y: 1, z: 5.12}
   m_Children: []
   m_Father: {fileID: 1569376097}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &671782275
 MonoBehaviour:
@@ -758,6 +706,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: L2
+  getsPartsFrom: {fileID: 991516663}
   colour: {r: 1, g: 0.43530226, b: 0.11764705, a: 1}
   taskDuration: 20
   clusters_x: 2
@@ -779,8 +728,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &735417177
 GameObject:
   m_ObjectHideFlags: 0
@@ -808,7 +755,7 @@ Transform:
   m_LocalScale: {x: 4.77, y: 1, z: 5.12}
   m_Children: []
   m_Father: {fileID: 1742110055}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &735417179
 MonoBehaviour:
@@ -822,6 +769,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: L2
+  getsPartsFrom: {fileID: 991516663}
   colour: {r: 1, g: 0.43530226, b: 0.11764705, a: 1}
   taskDuration: 20
   clusters_x: 2
@@ -843,8 +791,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &801281147
 GameObject:
   m_ObjectHideFlags: 0
@@ -872,7 +818,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1569376097}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &801281149
 MonoBehaviour:
@@ -886,6 +832,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: REG
+  getsPartsFrom: {fileID: 165914233}
   colour: {r: 0.3706066, g: 1, b: 0.23113209, a: 1}
   taskDuration: 1
   clusters_x: 1
@@ -907,8 +854,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &991516661
 GameObject:
   m_ObjectHideFlags: 0
@@ -950,6 +895,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: L3
+  getsPartsFrom: {fileID: 268225004}
   colour: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
   taskDuration: 40
   clusters_x: 8
@@ -971,8 +917,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &1090270857
 GameObject:
   m_ObjectHideFlags: 0
@@ -1000,7 +944,7 @@ Transform:
   m_LocalScale: {x: 0.62, y: 1, z: 5.1}
   m_Children: []
   m_Father: {fileID: 1742110055}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1090270859
 MonoBehaviour:
@@ -1014,6 +958,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: L1
+  getsPartsFrom: {fileID: 735417179}
   colour: {r: 1, g: 0.74572635, b: 0.11764705, a: 1}
   taskDuration: 3
   clusters_x: 2
@@ -1035,8 +980,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &1182547518
 GameObject:
   m_ObjectHideFlags: 0
@@ -1063,9 +1006,9 @@ Transform:
   m_LocalPosition: {x: 144, y: 0, z: -21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 1832561923}
   - {fileID: 1850778185}
   - {fileID: 571405063}
-  - {fileID: 1832561923}
   m_Father: {fileID: 6441911}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1086,134 +1029,6 @@ MonoBehaviour:
   L2: {fileID: 571405064}
   L1: {fileID: 1850778186}
   REG: {fileID: 1832561924}
---- !u!1 &1238284482
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 1238284483}
-  - component: {fileID: 1238284484}
-  m_Layer: 0
-  m_Name: L2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1238284483
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1238284482}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2, y: 0, z: 11}
-  m_LocalScale: {x: 4.77, y: 1, z: 5.12}
-  m_Children: []
-  m_Father: {fileID: 273678385}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1238284484
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1238284482}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b517bdeca03244e6b3e4735d90003d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  storageName: L2
-  colour: {r: 1, g: 0.43530226, b: 0.11764705, a: 1}
-  taskDuration: 20
-  clusters_x: 2
-  clusters_y: 1
-  clusters_z: 8
-  cluster_width: 8
-  cluster_height: 1
-  cluster_depth: 2
-  gutterX: 1
-  gutterY: 1
-  gutterZ: 1
-  usedSpace: 0
-  freeSpace: 0
-  capacity: 256
-  clusterCapacity: 16
-  taskStep: 0
-  currentState: 0
-  storageLocations: []
-  aisleSpaces: []
-  factor: 0
-  contents: []
-  pending_STORE: []
-  pending_SEND: []
---- !u!1 &1393791984
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 1393791985}
-  - component: {fileID: 1393791986}
-  m_Layer: 0
-  m_Name: reg
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1393791985
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1393791984}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7, y: 0, z: 2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 273678385}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1393791986
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1393791984}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b517bdeca03244e6b3e4735d90003d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  storageName: REG
-  colour: {r: 0.3706066, g: 1, b: 0.23113209, a: 1}
-  taskDuration: 1
-  clusters_x: 1
-  clusters_y: 1
-  clusters_z: 1
-  cluster_width: 8
-  cluster_height: 1
-  cluster_depth: 1
-  gutterX: 1
-  gutterY: 1
-  gutterZ: 1
-  usedSpace: 0
-  freeSpace: 0
-  capacity: 8
-  clusterCapacity: 8
-  taskStep: 0
-  currentState: 0
-  storageLocations: []
-  aisleSpaces: []
-  factor: 0
-  contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &1569376096
 GameObject:
   m_ObjectHideFlags: 0
@@ -1240,9 +1055,9 @@ Transform:
   m_LocalPosition: {x: 72.3, y: 0, z: -21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 801281148}
   - {fileID: 165914232}
   - {fileID: 671782274}
-  - {fileID: 801281148}
   m_Father: {fileID: 6441911}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1289,9 +1104,9 @@ Transform:
   m_LocalPosition: {x: 107.7, y: 0, z: -21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 2123815247}
   - {fileID: 1090270858}
   - {fileID: 735417178}
-  - {fileID: 2123815247}
   m_Father: {fileID: 6441911}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1339,7 +1154,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1182547519}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1832561924
 MonoBehaviour:
@@ -1353,6 +1168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: REG
+  getsPartsFrom: {fileID: 1850778186}
   colour: {r: 0.3706066, g: 1, b: 0.23113209, a: 1}
   taskDuration: 1
   clusters_x: 1
@@ -1374,8 +1190,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &1850778184
 GameObject:
   m_ObjectHideFlags: 0
@@ -1403,7 +1217,7 @@ Transform:
   m_LocalScale: {x: 0.62, y: 1, z: 5.1}
   m_Children: []
   m_Father: {fileID: 1182547519}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1850778186
 MonoBehaviour:
@@ -1417,6 +1231,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: L1
+  getsPartsFrom: {fileID: 571405064}
   colour: {r: 1, g: 0.74572635, b: 0.11764705, a: 1}
   taskDuration: 3
   clusters_x: 2
@@ -1438,8 +1253,6 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []
 --- !u!1 &2123815246
 GameObject:
   m_ObjectHideFlags: 0
@@ -1467,7 +1280,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1742110055}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2123815248
 MonoBehaviour:
@@ -1481,6 +1294,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   storageName: REG
+  getsPartsFrom: {fileID: 1090270859}
   colour: {r: 0.3706066, g: 1, b: 0.23113209, a: 1}
   taskDuration: 1
   clusters_x: 1
@@ -1502,5 +1316,3 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
-  pending_STORE: []
-  pending_SEND: []

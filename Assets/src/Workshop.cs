@@ -9,19 +9,17 @@ public class Workshop : MonoBehaviour
 	public float width, height;
 	public Storage L2, L1, REG;
 
-	private List<WorkshopTask> tasklist;
+	private Queue<WorkshopTask> tasklist;
 	private WorkshopTask currentTask;
 
 	private void Awake()
 	{
-		tasklist = new List<WorkshopTask>();
+		tasklist = new Queue<WorkshopTask>();
 	}
 
 	public void AddTask(VehicleDesign _design, VehiclePart_Config[] _vehicleParts, int _iterations, bool _appendOnCompletion)
 	{
-		tasklist.Add(new WorkshopTask(_design, _vehicleParts, _iterations, _appendOnCompletion));
-		Debug.Log("workshop_" + workshopIndex + ", added: " + tasklist[tasklist.Count-1].Log());
-		currentTask = tasklist[0];
+		tasklist.Enqueue(new WorkshopTask(_design, _vehicleParts, _iterations, _appendOnCompletion));
 	}
 
 	private void OnDrawGizmos()
@@ -32,21 +30,41 @@ public class Workshop : MonoBehaviour
 		}
 	}
 
-	private void NextTask()
+	public void NextTask()
 	{
-		
+		if (tasklist.Count > 0)
+		{
+			currentTask = tasklist.Dequeue();
+			
+		}
+		else
+		{
+			Debug.Log("DONE");
+		}
 	}
 
 	private void Tick()
 	{
 		if (tasklist.Count > 0)
 		{
-			
+			// check if REG has the required pieces to perform the task
 		}
 	}
 
-	private void RequestPart()
+	private void StartOrder()
 	{
+	}
+
+	private void Vote_PartsForSharedStorage(VehiclePart_Config[] _parts)
+	{
+		// Total number of parts per iteration of this task
+		int partsPerTask = _parts.Length;	
+	
+		VehiclePart_Config[] _REQUEST = new VehiclePart_Config[Factory.SHARED_STORAGE_CORE_SHARE];	
+		for (int i = 0; i < Factory.SHARED_STORAGE_CORE_SHARE; i++)
+		{
+			_REQUEST[i] = _parts[i % partsPerTask];
+		}
 	}
 }
 
