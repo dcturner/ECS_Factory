@@ -119,7 +119,7 @@ public class Factory : SerializedMonoBehaviour
                     _PARTS.Add(_PART.partConfig);
                 }
                     workshops[0].AddTask(_DESIGN, _PARTS.ToArray(), vehicleOrder[_DESIGN], true);
-                workshops[0].L1.RequestPart(_PARTS[0], 8, workshops[0].REG);
+                workshops[0].L1.RequestPart(new VehiclePartRequest(_PARTS[0],workshops[0].REG, 8));
                 break;
             case FactoryMode.DOD:
                 break;

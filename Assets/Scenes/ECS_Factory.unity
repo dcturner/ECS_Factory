@@ -207,7 +207,7 @@ MonoBehaviour:
       Data: 
   factoryMode: 0
   PartsDeliveredTo: {fileID: 398428904}
-  tickRate: 0.066
+  tickRate: 0.027
   HD: {fileID: 398428904}
   RAM: {fileID: 268225004}
   L3: {fileID: 991516663}
@@ -333,6 +333,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -461,6 +463,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!4 &273678385 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9,
@@ -532,8 +536,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 282840810}
-  m_LocalRotation: {x: 0.65372694, y: 0.0011345427, z: -0.0009802943, w: 0.7567291}
-  m_LocalPosition: {x: 3.2839732, y: 92.14626, z: 10.327341}
+  m_LocalRotation: {x: 0.3191934, y: 0.3308905, z: -0.12007423, w: 0.8798916}
+  m_LocalPosition: {x: 18.734285, y: 62.677048, z: -33.365974}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -582,7 +586,7 @@ MonoBehaviour:
   storageName: HD
   getsPartsFrom: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
-  taskDuration: 500
+  taskDuration: 234
   clusters_x: 4
   clusters_y: 1
   clusters_z: 12
@@ -602,6 +606,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &571405062
 GameObject:
   m_ObjectHideFlags: 0
@@ -665,6 +671,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &671782273
 GameObject:
   m_ObjectHideFlags: 0
@@ -728,6 +736,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &735417177
 GameObject:
   m_ObjectHideFlags: 0
@@ -791,6 +801,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &801281147
 GameObject:
   m_ObjectHideFlags: 0
@@ -854,6 +866,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &991516661
 GameObject:
   m_ObjectHideFlags: 0
@@ -917,6 +931,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &1090270857
 GameObject:
   m_ObjectHideFlags: 0
@@ -980,6 +996,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &1182547518
 GameObject:
   m_ObjectHideFlags: 0
@@ -1190,6 +1208,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &1850778184
 GameObject:
   m_ObjectHideFlags: 0
@@ -1253,6 +1273,8 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
 --- !u!1 &2123815246
 GameObject:
   m_ObjectHideFlags: 0
@@ -1316,3 +1338,5 @@ MonoBehaviour:
   aisleSpaces: []
   factor: 0
   contents: []
+  pending_STORE: []
+  pending_SEND: []
