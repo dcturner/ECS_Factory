@@ -1,95 +1,99 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Workshop : MonoBehaviour
 {
+    public int workshopIndex;
+    public float width, height;
+    public Storage L2, L1, REG;
 
-	public int workshopIndex;
-	public float width, height;
-	public Storage L2, L1, REG;
+    private Queue<WorkshopTask> tasklist;
+    public WorkshopTask currentTask = null;
 
-	private Queue<WorkshopTask> tasklist;
-	private WorkshopTask currentTask;
+    private void Awake()
+    {
+        tasklist = new Queue<WorkshopTask>();
+    }
 
-	private void Awake()
-	{
-		tasklist = new Queue<WorkshopTask>();
-	}
+    private void OnDrawGizmos()
+    {
+        if (L2 && L1 && REG)
+        {
+            GizmoHelpers.DrawRect(Color.cyan, transform.position, width, height, "CORE [" + workshopIndex + "]");
+        }
+    }
 
-	public void AddTask(VehicleDesign _design, VehiclePart_Config[] _vehicleParts, int _iterations, bool _appendOnCompletion)
-	{
-		tasklist.Enqueue(new WorkshopTask(_design, _vehicleParts, _iterations, _appendOnCompletion));
-	}
+    public void Tick()
+    {
+        if (currentTask!=null)
+        {
+        PerformTask();
+            // check if REG has the required pieces to perform the task
+        }
+    }
 
-	private void OnDrawGizmos()
-	{
-		if (L2 && L1 && REG)
-		{
-			GizmoHelpers.DrawRect(Color.cyan, transform.position, width, height, "CORE [" + workshopIndex + "]");
-		}
-	}
+    // Perform the task as many times as possible
+    void PerformTask()
+    {
+        VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
+        
+        // Do I have a suitable chassis?
+        List<VehiclePart_CHASSIS> viableChassis =
+            REG.FindChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+        
+        if (viableChassis.Count > 0)
+        {
+            Debug.Log(workshopIndex  + " chassis: " + viableChassis.Count);
+            // which required parts do I have?
+            List<VehiclePart> viableParts = new List<VehiclePart>();
+            foreach (VehiclePart _PART in REG.contents)
+            {
+                foreach (VehiclePart_Config _REQUIRED in currentTask.requiredParts.Keys)
+                {
+                    if (_PART.partConfig == _REQUIRED)
+                    {
+                        viableParts.Add(_PART);
+                    }
+                }
+            }
 
-	public void NextTask()
-	{
-		if (tasklist.Count > 0)
-		{
-			currentTask = tasklist.Dequeue();
-			
-		}
-		else
-		{
-			Debug.Log("DONE");
-		}
-	}
+            if (viableParts.Count > 0)
+            {
+                Debug.Log(workshopIndex  + " viableParts: " + viableParts.Count);
+            }
+            else
+            {
+                Debug.Log(workshopIndex + " needs PARTS");;
+            }
 
-	private void Tick()
-	{
-		if (tasklist.Count > 0)
-		{
-			// check if REG has the required pieces to perform the task
-		}
-	}
+            // Can I perform the assigned task?
+            // do I have any required parts AND a suitable chassis? - if so, DO IT
 
-	private void StartOrder()
-	{
-	}
-
-	private void Vote_PartsForSharedStorage(VehiclePart_Config[] _parts)
-	{
-		// Total number of parts per iteration of this task
-		int partsPerTask = _parts.Length;	
-	
-		VehiclePart_Config[] _REQUEST = new VehiclePart_Config[Factory.SHARED_STORAGE_CORE_SHARE];	
-		for (int i = 0; i < Factory.SHARED_STORAGE_CORE_SHARE; i++)
-		{
-			_REQUEST[i] = _parts[i % partsPerTask];
-		}
-	}
+            // if not, order the parts for the task
+        }
+        else
+        {
+//            Debug.Log(workshopIndex  + " needs CHASSIS");
+// no viable CHASSIS - request some
+            L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig, requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG, REG.capacity));
+        }
+    }
 }
 
-public struct WorkshopTask
+public class WorkshopTask
 {
-	public VehicleDesign design;
-	public VehiclePart_Config[] parts;
-	public bool appendOnCompletion;
-	public int iterations;
+    public VehicleDesign design;
+    public Dictionary<VehiclePart_Config, int> requiredParts;
 
-	public WorkshopTask(VehicleDesign _design, VehiclePart_Config[] _parts, int _iterations, bool _appendOnCompletion)
-	{
-		design = _design;
-		parts = _parts;
-		iterations = _iterations;
-		appendOnCompletion = _appendOnCompletion;
-	}
-
-	public string Log()
-	{
-		string _PART_LIST = "";
-		foreach (VehiclePart_Config _PART in parts)
-		{
-			_PART_LIST += _PART.name + " | ";
-		}
-		return design.designName + ": " + iterations + " x  >>> " + _PART_LIST;
-	}
+    public WorkshopTask(VehicleDesign _design, Dictionary<VehiclePart_Config, int> _requiredParts)
+    {
+        design = _design;
+        requiredParts = _requiredParts;
+    }
 }

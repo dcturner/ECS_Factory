@@ -6,8 +6,7 @@ using Sirenix.OdinInspector.Editor.Drawers;
 
 [CreateAssetMenu(fileName = "VehiclePart_X", menuName = "Factory/Vehicle Part")]
 public class VehiclePart_Config : ScriptableObject
-{
-    
+{   
     [InlineEditor(InlineEditorModes.LargePreview), Required]
     public GameObject prefab_part;
     public Vehicle_PartType partType;

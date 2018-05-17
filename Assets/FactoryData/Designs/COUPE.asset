@@ -15,3 +15,5 @@ MonoBehaviour:
     type: 2}
   designName: Coupe
   chassisColour: {r: 0.8584906, g: 0.068841234, b: 0.068841234, a: 1}
+  chassisType: {fileID: 114719134083705496, guid: 563aa401ea9f14c0fb3bd0c35c04c653,
+    type: 2}

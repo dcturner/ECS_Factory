@@ -76,15 +76,14 @@
     <Compile Include="Assets\ConsolePro\Remote\LiteNetLib\ReliableChannel.cs" />
     <Compile Include="Assets\ConsolePro\Remote\LiteNetLib\SequencedChannel.cs" />
     <Compile Include="Assets\ConsolePro\Remote\LiteNetLib\SimpleChannel.cs" />
-    <Compile Include="Assets\src\CoreTypes.cs" />
     <Compile Include="Assets\src\Factory.cs" />
     <Compile Include="Assets\src\Helpers\GizmoHelpers.cs" />
     <Compile Include="Assets\src\Helpers\Timer.cs" />
     <Compile Include="Assets\src\Helpers\VehiclePart_List.cs" />
     <Compile Include="Assets\src\Storage.cs" />
-    <Compile Include="Assets\src\VehiclePart.cs" />
-    <Compile Include="Assets\src\Vehicles\Vehicle.cs" />
     <Compile Include="Assets\src\Vehicles\VehicleDesign.cs" />
+    <Compile Include="Assets\src\Vehicles\VehiclePart.cs" />
+    <Compile Include="Assets\src\Vehicles\VehiclePart_CHASSIS.cs" />
     <Compile Include="Assets\src\Vehicles\VehiclePart_Config.cs" />
     <Compile Include="Assets\src\Workshop.cs" />
     <None Include="Assets\AlignAndDistribute\AlignAndDistribute_ReadMe.txt" />

@@ -24,7 +24,8 @@ public class Factory : SerializedMonoBehaviour
     public Storage HD, RAM, L3;
     private Storage[] storage;
     private List<Workshop> workshops;
-  
+    private List<WorkshopTask> workshopTasks;
+
     private int storageCount;
     public static int SHARED_STORAGE_CAPACITY;
     public static int SHARED_STORAGE_CORE_SHARE;
@@ -34,7 +35,6 @@ public class Factory : SerializedMonoBehaviour
     public Dictionary<VehicleDesign, int> vehicleOrder;
     public Dictionary<VehicleDesign, int> CompletedVehicles;
     private Dictionary<VehiclePart_Config, int> requiredParts;
-    private Dictionary<VehiclePart_Config, List<VehiclePart>> parts;
 
     private void Awake()
     {
@@ -44,7 +44,6 @@ public class Factory : SerializedMonoBehaviour
         workshops = FindObjectsOfType<Workshop>().OrderBy(m => m.workshopIndex).ToList();
         storageCount = storage.Length;
         requiredParts = new Dictionary<VehiclePart_Config, int>();
-        parts = new Dictionary<VehiclePart_Config, List<VehiclePart>>();
         CompletedVehicles = new Dictionary<VehicleDesign, int>();
     }
 
@@ -53,7 +52,7 @@ public class Factory : SerializedMonoBehaviour
         // set up SHARED STORAGE statics (L3)
         SHARED_STORAGE_CAPACITY = L3.capacity;
         SHARED_STORAGE_CORE_SHARE = SHARED_STORAGE_CAPACITY / workshops.Count;
-        Debug.Log("WORKSHOPS GET ["+SHARED_STORAGE_CORE_SHARE+"] of ["+SHARED_STORAGE_CAPACITY+"]");
+        Debug.Log("WORKSHOPS GET [" + SHARED_STORAGE_CORE_SHARE + "] of [" + SHARED_STORAGE_CAPACITY + "]");
         Get_RequiredParts();
         ScheduleTasks();
     }
@@ -91,39 +90,57 @@ public class Factory : SerializedMonoBehaviour
             VehiclePart_Config _PART = _PAIR.Key;
             int _TOTAL = _PAIR.Value;
             GameObject _PART_PREFAB = _PART.prefab_part;
-            parts.Add(_PART, new List<VehiclePart>());
-            List<VehiclePart> _LIST = parts[_PART];
             Debug.Log(_PART.name + " x " + _TOTAL);
+            List<VehiclePart_CHASSIS> _LIST_CHASSIS = new List<VehiclePart_CHASSIS>();
+            List<VehiclePart> _LIST_PARTS = new List<VehiclePart>();
             for (int i = 0; i < _TOTAL; i++)
             {
                 GameObject _part_OBJ =
                     (GameObject) Instantiate(_PART_PREFAB, Vector3.zero, Quaternion.identity);
-                _LIST.Add(_part_OBJ.GetComponent<VehiclePart>());
-        // parts are instantiated - now lets force_quickSave them into "PartsDeliveredTo" (usually RAM)
+                if (_PART.partType == Vehicle_PartType.CHASSIS)
+                {
+                    _LIST_CHASSIS.Add(_part_OBJ.GetComponent<VehiclePart_CHASSIS>());
+                }
+                else
+                {
+                _LIST_PARTS.Add(_part_OBJ.GetComponent<VehiclePart>());
+                }
             }
-        PartsDeliveredTo.Force_QuickSave(_LIST.ToArray());
+            
+            // parts are instantiated - now lets force_quickSave them into "PartsDeliveredTo" (usually RAM)
+            PartsDeliveredTo.Force_QuickSave(_LIST_CHASSIS.ToArray());
+            PartsDeliveredTo.Force_QuickSave(_LIST_PARTS.ToArray());
         }
-    
     }
 
     private void ScheduleTasks()
     {
+        
+        // STEP ONE - order all the required parts
+        VehicleDesign _DESIGN = vehicleOrder.Keys.First();
+        List<VehicleDesign_RequiredPart> _PARTS = new List<VehicleDesign_RequiredPart>();
+        Debug.Log(_DESIGN.designName);
+        foreach (VehicleDesign_RequiredPart _REQUIRED_PART in _DESIGN.requiredParts)
+        {
+            _PARTS.Add(_REQUIRED_PART);
+        }
+        workshopTasks = new List<WorkshopTask>();
+
+        // STEP TWO - Depending on the approach (OOP / DOD), setup workshop tasks
         switch (factoryMode)
         {
             case FactoryMode.OOP:
-                VehicleDesign _DESIGN = vehicleOrder.Keys.First();
-                List<VehiclePart_Config> _PARTS = new List<VehiclePart_Config>();
-                Debug.Log(_DESIGN.designName);
-                foreach (VehicleDesign_RequiredPart _PART in _DESIGN.requiredParts)
+                // for each design - make a single workshop task to tackle it
+                foreach (VehicleDesign _VEHICLE_DESIGN in vehicleOrder.Keys)
                 {
-                    _PARTS.Add(_PART.partConfig);
+                    workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN, _VEHICLE_DESIGN.quantities));
                 }
-                    workshops[0].AddTask(_DESIGN, _PARTS.ToArray(), vehicleOrder[_DESIGN], true);
-                workshops[0].L1.RequestPart(new VehiclePartRequest(_PARTS[0],workshops[0].REG, 8));
                 break;
             case FactoryMode.DOD:
                 break;
         }
+
+        workshops[0].currentTask = workshopTasks[0];
     }
 
     private void Update()
@@ -143,18 +160,22 @@ public class Factory : SerializedMonoBehaviour
         {
             storage[i].Tick();
         }
+
+        for (int i = 0; i < workshops.Count; i++)
+        {
+            workshops[i].Tick();
+        }
     }
 
     #region ------------------------- < MOVE PARTS BETWEEN STORAGE
 
     public void OrderParts(Storage _target)
     {
-        
     }
 
     #endregion ------------------------ MOVE PARTS BETWEEN STORAGE >
 
-    
+
     #region ------------------------- < GIZMOS METHODS
 
     [Button("Toggle Storage Cell Gizmos")]

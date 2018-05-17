@@ -267,6 +267,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114056152344078698, guid: 6c141f121dcd3422f81cb47d4144e0a9,
+        type: 2}
+      propertyPath: taskDuration
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
   m_IsPrefabParent: 0
@@ -586,7 +591,7 @@ MonoBehaviour:
   storageName: HD
   getsPartsFrom: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
-  taskDuration: 234
+  taskDuration: 100
   clusters_x: 4
   clusters_y: 1
   clusters_z: 12
@@ -911,7 +916,7 @@ MonoBehaviour:
   storageName: L3
   getsPartsFrom: {fileID: 268225004}
   colour: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
-  taskDuration: 40
+  taskDuration: 100
   clusters_x: 8
   clusters_y: 1
   clusters_z: 20
@@ -1013,7 +1018,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1182547519
 Transform:
   m_ObjectHideFlags: 0
@@ -1062,7 +1067,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1569376097
 Transform:
   m_ObjectHideFlags: 0
@@ -1111,7 +1116,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1742110055
 Transform:
   m_ObjectHideFlags: 0

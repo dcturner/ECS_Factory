@@ -172,7 +172,6 @@
           </e>
         </e>
         <e p="src" t="Include">
-          <e p="CoreTypes.cs" t="Include" />
           <e p="Factory.cs" t="Include" />
           <e p="Helpers" t="Include">
             <e p="GizmoHelpers.cs" t="Include" />
@@ -180,10 +179,10 @@
             <e p="VehiclePart_List.cs" t="Include" />
           </e>
           <e p="Storage.cs" t="Include" />
-          <e p="VehiclePart.cs" t="Include" />
           <e p="Vehicles" t="Include">
-            <e p="Vehicle.cs" t="Include" />
             <e p="VehicleDesign.cs" t="Include" />
+            <e p="VehiclePart.cs" t="Include" />
+            <e p="VehiclePart_CHASSIS.cs" t="Include" />
             <e p="VehiclePart_Config.cs" t="Include" />
           </e>
           <e p="Workshop.cs" t="Include" />

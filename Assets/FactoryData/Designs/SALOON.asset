@@ -15,3 +15,5 @@ MonoBehaviour:
     type: 2}
   designName: Saloon
   chassisColour: {r: 0.30655926, g: 0.64720607, b: 0.7830189, a: 1}
+  chassisType: {fileID: 114342177479131618, guid: b783282b50c004f2a98d946cdf60fb66,
+    type: 2}

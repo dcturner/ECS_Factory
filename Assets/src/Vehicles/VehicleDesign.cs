@@ -12,6 +12,7 @@ public class VehicleDesign : ScriptableObject
 
     public string designName;
     public Color chassisColour;
+    public VehiclePart_CHASSIS chassisType;
     public List<VehicleDesign_RequiredPart> requiredParts;
     public Dictionary<VehiclePart_Config, int> quantities;
 

@@ -381,7 +381,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4647232689028058}
-  - component: {fileID: 114662289873936572}
+  - component: {fileID: 114342177479131618}
   m_Layer: 0
   m_Name: Chassis
   m_TagString: Untagged
@@ -3505,6 +3505,21 @@ MonoBehaviour:
   partConfig: {fileID: 11400000, guid: ab2569a77e4e44ddb827e817df690434, type: 2}
   age: 0
   id: 0
+--- !u!114 &114342177479131618
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1525350159376770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16da2825080ea4d3b8e65d5f86c95bb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  partConfig: {fileID: 11400000, guid: 01ec6b177ccfe4c04b239ba564619b3e, type: 2}
+  age: 0
+  id: 0
+  chassisType: 1
 --- !u!114 &114395839997462468
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3573,20 +3588,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   partConfig: {fileID: 11400000, guid: 583a768a59c2a41e98c89a399f6bd9d8, type: 2}
-  age: 0
-  id: 0
---- !u!114 &114662289873936572
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1525350159376770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ec898cc63f4c4d23810cab9a882bf44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  partConfig: {fileID: 11400000, guid: 762e44f2055674e2bacfa8407a98c9ab, type: 2}
   age: 0
   id: 0
 --- !u!114 &114802226634762962

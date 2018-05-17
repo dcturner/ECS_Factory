@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Schema;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
+using Sirenix.Utilities;
 using UnityEditor;
 using UnityEngine;
 
@@ -106,10 +107,15 @@ public class Storage : MonoBehaviour
             switch (currentState)
             {
                 case StorageState.IDLE:
-                    if (pending_REQUEST != null)
+                    if (pending_STORE != null)
+                    {
+                        AttemptStore(pending_STORE);
+                    }
+                    else if (pending_REQUEST != null)
                     {
                         RequestPart(pending_REQUEST);
                     }
+
                     break;
                 case StorageState.WAITING_FOR_DELIVERY:
                     break;
@@ -129,13 +135,17 @@ public class Storage : MonoBehaviour
         int index = 0;
         while (freeSpace > 0 && index < _parts.Length)
         {
-            VehiclePart _PART = _parts[index];
+            VehiclePart _PART = (_parts[index].partConfig.partType == Vehicle_PartType.CHASSIS)
+                ? _parts[index] as VehiclePart_CHASSIS
+                : _parts[index];
             contents.Add(_PART);
             _PART.transform.position = storageLocations[usedSpace];
             index++;
             freeSpace--;
             usedSpace++;
         }
+
+        pending_STORE = null;
     }
 
     public void RequestPart(VehiclePartRequest _request)
@@ -165,19 +175,79 @@ public class Storage : MonoBehaviour
             {
                 pending_REQUEST = _request;
                 ChangeState(StorageState.WAITING_FOR_DELIVERY);
-                getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this, _request.maxParts*2));
+                getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this, _request.maxParts * 2));
             }
         }
     }
 
-    private int CurrentStorageCell()
+    // Check within CONTENTS for chassis that meet the required criteria (PART TYPE MISSING)
+    // e.g. find chassis that still need wheels
+    public void RequestChassis(VehicleChassiRequest _request)
     {
-        return contents.Count - 1;
+        if (currentState == StorageState.IDLE)
+        {
+            Debug.Log(storageName + " sourcing chassis: " + _request.part.name + " for " +
+                      _request.deliverTo.storageName);
+            sendingPartsTo = _request.deliverTo;
+
+            VehiclePart_CHASSIS[] _chassisFound = FindChassis(_request.chassisVersion, _request.requiredParts).ToArray();
+            int _totalFound = _chassisFound.Length;
+            if (_totalFound > 0)
+            {
+                if (_totalFound > _request.maxParts)
+                {
+                    Array.Resize(ref _chassisFound, _request.maxParts);
+                }
+                pending_SEND = _chassisFound;
+                pending_REQUEST = null;
+                ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
+            }
+            else
+            {
+                pending_REQUEST = _request;
+                ChangeState(StorageState.WAITING_FOR_DELIVERY);
+                getsPartsFrom.RequestChassis(new VehicleChassiRequest(_request.part, _request.chassisVersion,
+                    _request.requiredParts, this, _request.maxParts * 2));
+            }
+        }
     }
 
-    private Vector3 CurrentStorageLocation()
+    public List<VehiclePart_CHASSIS> FindChassis(int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
     {
-        return storageLocations[CurrentStorageCell()];
+        List<VehiclePart_CHASSIS> _CHASSIS_LIST = new List<VehiclePart_CHASSIS>();
+        foreach (VehiclePart _PART in contents)
+        {
+            VehiclePart_Config _PART_CONFIG = _PART.partConfig;
+            if (_PART_CONFIG.partType == Vehicle_PartType.CHASSIS && _PART_CONFIG.partVersion == _chassisVersion)
+            {
+                VehiclePart_CHASSIS _CHASSIS = _PART as VehiclePart_CHASSIS;
+                var _PARTS_FITTED = _CHASSIS.partsFitted;
+                int criteriaMet = 0;
+
+                // for each part missing, criteriaMet ++
+                foreach (KeyValuePair<VehiclePart_Config,int> _PAIR in _requiredParts)
+                {
+                    VehiclePart_Config _REQ_PART = _PAIR.Key;
+                    int _QUANTITY = _PAIR.Value;
+                    if (_PARTS_FITTED.ContainsKey(_REQ_PART))
+                    {
+                        criteriaMet += _QUANTITY - _PARTS_FITTED[_REQ_PART];
+                    }
+                    else
+                    {
+                        criteriaMet += _QUANTITY;
+                    }
+                }
+
+                if (criteriaMet > 0)
+                {
+                    _CHASSIS.tempCriteriaMet = criteriaMet;
+                    _CHASSIS_LIST.Add(_CHASSIS);
+                }
+            }
+        }
+        List<VehiclePart_CHASSIS> _CHASSIS_SORTED = _CHASSIS_LIST.OrderBy(c => c.tempCriteriaMet).ToList();
+        return _CHASSIS_SORTED;
     }
 
     public void Tick()
@@ -214,6 +284,7 @@ public class Storage : MonoBehaviour
             freeSpace++;
             usedSpace--;
         }
+
         sendingPartsTo.Recieve_Parts(pending_SEND);
         pending_SEND = null;
         ChangeState(StorageState.IDLE);
@@ -221,7 +292,7 @@ public class Storage : MonoBehaviour
 
     public void Recieve_Parts(VehiclePart[] _parts)
     {
-        if (currentState != StorageState.FETCHING_REQUESTED_ITEMS)
+        if (currentState == StorageState.IDLE || currentState == StorageState.WAITING_FOR_DELIVERY)
         {
             // store
 //            Debug.Log(storageName + " Recieved " + _parts.Length + " x " + _parts[0].partConfig.name);
@@ -234,6 +305,7 @@ public class Storage : MonoBehaviour
             pending_STORE = _parts;
         }
     }
+
 
     private void OnDrawGizmos()
     {
@@ -316,6 +388,23 @@ public class VehiclePartRequest
     public VehiclePartRequest(VehiclePart_Config _part, Storage _deliverTo, int _maxParts)
     {
         part = _part;
+        deliverTo = _deliverTo;
+        maxParts = _maxParts;
+    }
+}
+
+public class VehicleChassiRequest : VehiclePartRequest
+{
+    public int chassisVersion;
+    public Dictionary<VehiclePart_Config, int> requiredParts;
+
+    public VehicleChassiRequest(VehiclePart_Config _part, int _chassisVersion,
+        Dictionary<VehiclePart_Config, int> _requiredParts, Storage _deliverTo, int _maxParts)
+        : base(_part, _deliverTo, _maxParts)
+    {
+        part = _part;
+        chassisVersion = _chassisVersion;
+        requiredParts = _requiredParts;
         deliverTo = _deliverTo;
         maxParts = _maxParts;
     }
