@@ -448,7 +448,7 @@ MonoBehaviour:
   storageName: RAM
   getsPartsFrom: {fileID: 398428904}
   colour: {r: 0, g: 0, b: 0, a: 1}
-  taskDuration: 100
+  taskDuration: 20
   clusters_x: 4
   clusters_y: 1
   clusters_z: 2
@@ -591,7 +591,7 @@ MonoBehaviour:
   storageName: HD
   getsPartsFrom: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
-  taskDuration: 100
+  taskDuration: 25
   clusters_x: 4
   clusters_y: 1
   clusters_z: 12
@@ -916,7 +916,7 @@ MonoBehaviour:
   storageName: L3
   getsPartsFrom: {fileID: 268225004}
   colour: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
-  taskDuration: 100
+  taskDuration: 15
   clusters_x: 8
   clusters_y: 1
   clusters_z: 20

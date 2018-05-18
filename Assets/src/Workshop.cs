@@ -51,12 +51,16 @@ public class Workshop : MonoBehaviour
         {
             // which required parts do I have?
             List<VehiclePart> _viableParts = new List<VehiclePart>();
+            List<VehiclePart_Config> _TASK_PARTS = currentTask.requiredParts.Keys.ToList();
             foreach (VehiclePart _PART in REG.contents)
             {
-                foreach (VehiclePart_Config _REQUIRED in currentTask.requiredParts.Keys)
+//                Debug.Log("Checking part: " + _PART.partConfig.name);
+                if (_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
                 {
-                    if (_PART.partConfig == _REQUIRED && _PART.partConfig.partType != Vehicle_PartType.CHASSIS)
+//                    Debug.Log("not chassis found: " + _PART.partConfig.name);
+                    if (_TASK_PARTS.Contains(_PART.partConfig))
                     {
+//                        Debug.Log("Part IS found in task list ("+ _PART.partConfig.name +")");
                         _viableParts.Add(_PART);
                     }
                 }
@@ -64,16 +68,23 @@ public class Workshop : MonoBehaviour
 
             if (_viableParts.Count > 0)
             {
+                Debug.Log("Viable parts - " + _viableParts.Count);
+                List<VehiclePart> _attachedParts= new List<VehiclePart>();
                 foreach (VehiclePart _VIABLE_PART in _viableParts)
                 {
                     foreach (VehiclePart_CHASSIS _VC in _viableChassis)
                     {
                         if (_VC.AttachPart(_VIABLE_PART.partConfig, _VIABLE_PART.gameObject))
                         {
-                            _viableParts.Remove(_VIABLE_PART);
-                            REG.contents.Remove(_VIABLE_PART);
+                            _attachedParts.Add(_VIABLE_PART);
                         }
                     }
+                }
+
+                foreach (VehiclePart _ATTACHED_PART in _attachedParts)
+                {
+                    _viableParts.Remove(_ATTACHED_PART);
+                    REG.contents.Remove(_ATTACHED_PART);
                 }
             }
             else
@@ -120,8 +131,9 @@ public class Workshop : MonoBehaviour
                     }
                 }
                 L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig,REG,partsToRequest));
-                
-                
+                REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
+                break;
+
 //                if (!_chassis.partsFitted.ContainsKey(_PAIR.Key))
 //                {
 //                    L1.RequestPart(new VehiclePartRequest(_PAIR.Key, REG, _PAIR.Value));

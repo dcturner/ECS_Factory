@@ -18,13 +18,17 @@ public class VehiclePart_CHASSIS : VehiclePart
         partsNeeded = new List<VehiclePart_Assignment>();
         foreach (VehiclePart_Assignment _REQUIRED_PART in design.requiredParts)
         {
-            partsNeeded.Add(_REQUIRED_PART);
+            if (_REQUIRED_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
+            {
+                partsNeeded.Add(_REQUIRED_PART);
+            }
         }
     }
 
     public bool AttachPart(VehiclePart_Config _part, GameObject _obj)
     {
         VehiclePart_Assignment _ASSIGNMENT = null;
+        Debug.Log("Trying to attach " + _part);
         foreach (VehiclePart_Assignment _PART_NEEDED in partsNeeded)
         {
             if (_PART_NEEDED.partConfig == _part)

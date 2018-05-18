@@ -103,7 +103,7 @@ public class Storage : MonoBehaviour
         if (currentState != _newState)
         {
             currentState = _newState;
-            Debug.Log(ToString() + currentState);
+//            Debug.Log(ToString() + currentState);
             switch (currentState)
             {
                 case StorageState.IDLE:
@@ -152,23 +152,19 @@ public class Storage : MonoBehaviour
     {
         if (currentState == StorageState.IDLE)
         {
-            Debug.Log(storageName + " sourcing: " + _request + " " + _request.part.name + " for " +
-                      _request.deliverTo.storageName);
             sendingPartsTo = _request.deliverTo;
             VehiclePart[] _partsFound = contents.Where(p => p.partConfig == _request.part).ToArray();
             int _totalFound = _partsFound.Length;
             if (_totalFound > 0)
             {
-                Debug.Log(storageName + " found: " + _totalFound + " " + _request.part.name);
                 if (_totalFound > _request.maxParts)
                 {
-                    Debug.Log("too many, trimming down to " + _request.maxParts);
                     Array.Resize(ref _partsFound, _request.maxParts);
                 }
 
                 pending_SEND = _partsFound;
                 pending_REQUEST = null;
-                Debug.Log("preparing to send " + _partsFound.Length + " parts to " + _request.deliverTo.storageName);
+
                 ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
             }
             else
@@ -186,8 +182,6 @@ public class Storage : MonoBehaviour
     {
         if (currentState == StorageState.IDLE)
         {
-            Debug.Log(storageName + " sourcing chassis: " + _request.part.name + " for " +
-                      _request.deliverTo.storageName);
             sendingPartsTo = _request.deliverTo;
 
             VehiclePart_CHASSIS[] _chassisFound = FindChassis(_request.chassisVersion, _request.requiredParts).ToArray();
@@ -276,7 +270,6 @@ public class Storage : MonoBehaviour
 
     private void READY_TO_DISPATCH()
     {
-        Debug.Log(storageName + " SENDING ITEMS");
         taskStep = 0;
         foreach (VehiclePart _PART in pending_SEND)
         {
@@ -301,8 +294,6 @@ public class Storage : MonoBehaviour
         }
         else
         {
-            Debug.Log(storageName + " Waiting to Store " + _parts.Length + " x " + _parts[0].partConfig.name);
-            pending_STORE = _parts;
         }
     }
 
