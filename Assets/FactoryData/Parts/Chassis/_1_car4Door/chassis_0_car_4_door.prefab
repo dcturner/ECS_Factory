@@ -312,6 +312,7 @@ MonoBehaviour:
   partConfig: {fileID: 11400000, guid: 01ec6b177ccfe4c04b239ba564619b3e, type: 2}
   age: 0
   id: 0
+  design: {fileID: 11400000, guid: 114b0d887b68343bf839eac40ad489fd, type: 2}
   chassisType: 1
   totalpartsFitted: 0
   tempCriteriaMet: 0

@@ -98,7 +98,7 @@ public class Storage : MonoBehaviour
         Debug.Log(storageName + " locations: " + storageLocations.Count);
     }
 
-    private void ChangeState(StorageState _newState)
+    public void ChangeState(StorageState _newState)
     {
         if (currentState != _newState)
         {

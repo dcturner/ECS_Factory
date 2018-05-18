@@ -118,9 +118,9 @@ public class Factory : SerializedMonoBehaviour
         
         // STEP ONE - order all the required parts
         VehicleDesign _DESIGN = vehicleOrder.Keys.First();
-        List<VehicleDesign_RequiredPart> _PARTS = new List<VehicleDesign_RequiredPart>();
+        List<VehiclePart_Assignment> _PARTS = new List<VehiclePart_Assignment>();
         Debug.Log(_DESIGN.designName);
-        foreach (VehicleDesign_RequiredPart _REQUIRED_PART in _DESIGN.requiredParts)
+        foreach (VehiclePart_Assignment _REQUIRED_PART in _DESIGN.requiredParts)
         {
             _PARTS.Add(_REQUIRED_PART);
         }

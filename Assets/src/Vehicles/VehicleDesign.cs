@@ -13,7 +13,7 @@ public class VehicleDesign : ScriptableObject
     public string designName;
     public Color chassisColour;
     public VehiclePart_CHASSIS chassisType;
-    public List<VehicleDesign_RequiredPart> requiredParts;
+    public List<VehiclePart_Assignment> requiredParts;
     public Dictionary<VehiclePart_Config, int> quantities;
 
     private void OnValidate()
@@ -22,11 +22,11 @@ public class VehicleDesign : ScriptableObject
         if (designPrefab != null)
         {
             designName = designPrefab.name;
-            requiredParts = new List<VehicleDesign_RequiredPart>();
+            requiredParts = new List<VehiclePart_Assignment>();
             foreach (VehiclePart _PART in designPrefab.GetComponentsInChildren<VehiclePart>())
             {
                 VehiclePart_Config _CONFIG = _PART.partConfig;
-                VehicleDesign_RequiredPart _temp = new VehicleDesign_RequiredPart(_PART.name, _CONFIG,
+                VehiclePart_Assignment _temp = new VehiclePart_Assignment(_PART.name, _CONFIG,
                     _PART.transform.localPosition, _PART.transform.localRotation);
                 requiredParts.Add(_temp);
                 if (quantities.ContainsKey(_CONFIG))
@@ -44,7 +44,7 @@ public class VehicleDesign : ScriptableObject
     public string Log()
     {
         string _STR = designName + " (): ";
-        foreach (VehicleDesign_RequiredPart _PART in requiredParts)
+        foreach (VehiclePart_Assignment _PART in requiredParts)
         {
             _STR += _PART.partConfig + " |";
         }

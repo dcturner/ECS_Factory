@@ -44,32 +44,51 @@ public class Workshop : MonoBehaviour
         VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
         
         // Do I have a suitable chassis?
-        List<VehiclePart_CHASSIS> viableChassis =
+        List<VehiclePart_CHASSIS> _viableChassis =
             REG.FindChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
         
-        if (viableChassis.Count > 0)
+        if (_viableChassis.Count > 0)
         {
-            Debug.Log(workshopIndex  + " chassis: " + viableChassis.Count);
             // which required parts do I have?
-            List<VehiclePart> viableParts = new List<VehiclePart>();
+            List<VehiclePart> _viableParts = new List<VehiclePart>();
             foreach (VehiclePart _PART in REG.contents)
             {
                 foreach (VehiclePart_Config _REQUIRED in currentTask.requiredParts.Keys)
                 {
-                    if (_PART.partConfig == _REQUIRED)
+                    if (_PART.partConfig == _REQUIRED && _PART.partConfig.partType != Vehicle_PartType.CHASSIS)
                     {
-                        viableParts.Add(_PART);
+                        _viableParts.Add(_PART);
                     }
                 }
             }
 
-            if (viableParts.Count > 0)
+            if (_viableParts.Count > 0)
             {
-                Debug.Log(workshopIndex  + " viableParts: " + viableParts.Count);
+                foreach (VehiclePart _VIABLE_PART in _viableParts)
+                {
+                    foreach (VehiclePart_CHASSIS _VC in _viableChassis)
+                    {
+                        if (_VC.AttachPart(_VIABLE_PART.partConfig, _VIABLE_PART.gameObject))
+                        {
+                            _viableParts.Remove(_VIABLE_PART);
+                            REG.contents.Remove(_VIABLE_PART);
+                        }
+                    }
+                }
             }
             else
             {
-                Debug.Log(workshopIndex + " needs PARTS");;
+                foreach (VehiclePart_CHASSIS _CHASSIS in _viableChassis)
+                {
+                    if (REG.currentState == StorageState.IDLE)
+                    {
+                        RequestViableParts(_CHASSIS);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
             // Can I perform the assigned task?
@@ -81,7 +100,42 @@ public class Workshop : MonoBehaviour
         {
 //            Debug.Log(workshopIndex  + " needs CHASSIS");
 // no viable CHASSIS - request some
-            L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig, requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG, REG.capacity));
+            L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig, requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG, Mathf.FloorToInt(REG.capacity * currentTask.ratio_chassis_to_parts)));
+        }
+    }
+    
+    public void RequestViableParts(VehiclePart_CHASSIS _chassis)
+    {
+        foreach (KeyValuePair<VehiclePart_Config,int> _PAIR in currentTask.requiredParts)
+        {
+            if (_PAIR.Key.partType != Vehicle_PartType.CHASSIS)
+            {
+                int partsToRequest = 0;
+                VehiclePart_Config _CONFIG = _chassis.partsNeeded[0].partConfig;
+                foreach (VehiclePart_Assignment _PART in _chassis.partsNeeded)
+                {
+                    if (_PART.partConfig == _CONFIG)
+                    {
+                        partsToRequest++;
+                    }
+                }
+                L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig,REG,partsToRequest));
+                
+                
+//                if (!_chassis.partsFitted.ContainsKey(_PAIR.Key))
+//                {
+//                    L1.RequestPart(new VehiclePartRequest(_PAIR.Key, REG, _PAIR.Value));
+//                    REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
+//                    break;
+//                }
+//                else if (_chassis.partsFitted[_PAIR.Key] < _PAIR.Value)
+//                {
+//                    L1.RequestPart(
+//                        new VehiclePartRequest(_PAIR.Key, REG, _PAIR.Value - _chassis.partsFitted[_PAIR.Key]));
+//                    REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
+//                    break;
+//                }
+            }
         }
     }
 }
@@ -90,10 +144,23 @@ public class WorkshopTask
 {
     public VehicleDesign design;
     public Dictionary<VehiclePart_Config, int> requiredParts;
+    public float ratio_chassis_to_parts;
 
     public WorkshopTask(VehicleDesign _design, Dictionary<VehiclePart_Config, int> _requiredParts)
     {
         design = _design;
         requiredParts = _requiredParts;
+        int partCount = 0;
+        foreach (KeyValuePair<VehiclePart_Config,int> _PAIR in requiredParts)
+        {
+            if (_PAIR.Key.partType != Vehicle_PartType.CHASSIS)
+            {
+                partCount++;
+            }
+        }
+
+        ratio_chassis_to_parts = 1 / (float) partCount;
     }
+
+    
 }

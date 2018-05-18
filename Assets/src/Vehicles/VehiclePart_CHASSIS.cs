@@ -4,15 +4,58 @@ using UnityEngine;
 
 public class VehiclePart_CHASSIS : VehiclePart
 {
+    public VehicleDesign design;
     public Vehicle_ChassisType chassisType;
     public int totalpartsFitted, tempCriteriaMet;
+    public List<VehiclePart_Assignment> partsNeeded;
     public Dictionary<VehiclePart_Config, int> partsFitted;
 
-    private void Awake()
+    private void Start()
     {
         totalpartsFitted = 0;
         tempCriteriaMet = 0;
         partsFitted = new Dictionary<VehiclePart_Config, int>();
+        partsNeeded = new List<VehiclePart_Assignment>();
+        foreach (VehiclePart_Assignment _REQUIRED_PART in design.requiredParts)
+        {
+            partsNeeded.Add(_REQUIRED_PART);
+        }
+    }
+
+    public bool AttachPart(VehiclePart_Config _part, GameObject _obj)
+    {
+        VehiclePart_Assignment _ASSIGNMENT = null;
+        foreach (VehiclePart_Assignment _PART_NEEDED in partsNeeded)
+        {
+            if (_PART_NEEDED.partConfig == _part)
+            {
+                _ASSIGNMENT = _PART_NEEDED;
+                break;
+            }
+        }
+
+        if (_ASSIGNMENT != null)
+        {
+            Transform _T = _obj.transform;
+            _T.SetParent(transform);
+            _T.localPosition = _ASSIGNMENT.position;
+            _T.localRotation = _ASSIGNMENT.rotation;
+            partsNeeded.Remove(_ASSIGNMENT);
+            if (!partsFitted.ContainsKey(_ASSIGNMENT.partConfig))
+            {
+                partsFitted[_ASSIGNMENT.partConfig] = 1;
+            }
+            else
+            {
+                partsFitted[_ASSIGNMENT.partConfig]++;
+            }
+Debug.Log("PART FITTED");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
 
