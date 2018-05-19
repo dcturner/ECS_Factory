@@ -86,6 +86,16 @@ public class Workshop : MonoBehaviour
                     _viableParts.Remove(_ATTACHED_PART);
                     REG.contents.Remove(_ATTACHED_PART);                    
                 }
+
+                foreach (VehiclePart_CHASSIS _CHASSIS in _viableChassis)
+                {
+                    if (_CHASSIS.vehicleIsComplete)
+                    {
+                        REG.contents.Remove(_CHASSIS);
+                        Destroy(_CHASSIS.gameObject);
+                        Factory.INSTANCE.VehicleComplete(_CHASSIS);
+                    }
+                }
                 REG.RefactorStorage();
             }
             else

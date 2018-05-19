@@ -9,6 +9,7 @@ public class VehiclePart_CHASSIS : VehiclePart
     public int totalpartsFitted, tempCriteriaMet;
     public List<VehiclePart_Assignment> partsNeeded;
     public Dictionary<VehiclePart_Config, int> partsFitted;
+    public bool vehicleIsComplete;
 
     private void Start()
     {
@@ -16,6 +17,7 @@ public class VehiclePart_CHASSIS : VehiclePart
         tempCriteriaMet = 0;
         partsFitted = new Dictionary<VehiclePart_Config, int>();
         partsNeeded = new List<VehiclePart_Assignment>();
+        vehicleIsComplete = false;
         foreach (VehiclePart_Assignment _REQUIRED_PART in design.requiredParts)
         {
             if (_REQUIRED_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
@@ -45,6 +47,7 @@ public class VehiclePart_CHASSIS : VehiclePart
             _T.localPosition = _ASSIGNMENT.position;
             _T.localRotation = _ASSIGNMENT.rotation;
             partsNeeded.Remove(_ASSIGNMENT);
+            vehicleIsComplete = (partsNeeded.Count == 0);
             if (!partsFitted.ContainsKey(_ASSIGNMENT.partConfig))
             {
                 partsFitted[_ASSIGNMENT.partConfig] = 1;

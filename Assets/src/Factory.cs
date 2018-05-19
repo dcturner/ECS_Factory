@@ -35,6 +35,7 @@ public class Factory : SerializedMonoBehaviour
     public Dictionary<VehicleDesign, int> vehicleOrder;
     public Dictionary<VehicleDesign, int> CompletedVehicles;
     private Dictionary<VehiclePart_Config, int> requiredParts;
+    public bool orderComplete;
 
     private void Awake()
     {
@@ -45,6 +46,7 @@ public class Factory : SerializedMonoBehaviour
         storageCount = storage.Length;
         requiredParts = new Dictionary<VehiclePart_Config, int>();
         CompletedVehicles = new Dictionary<VehicleDesign, int>();
+        orderComplete = false;
     }
 
     private void Start()
@@ -153,17 +155,43 @@ public class Factory : SerializedMonoBehaviour
 
     private void Tick()
     {
-        t = tickRate;
-        tick++;
-
-        for (int i = 0; i < storageCount; i++)
+        if (!orderComplete)
         {
-            storage[i].Tick();
+            t = tickRate;
+            tick++;
+
+            for (int i = 0; i < storageCount; i++)
+            {
+                storage[i].Tick();
+            }
+
+            for (int i = 0; i < workshops.Count; i++)
+            {
+                workshops[i].Tick();
+            }
         }
+    }
 
-        for (int i = 0; i < workshops.Count; i++)
+    public void VehicleComplete(VehiclePart_CHASSIS _chassis)
+    {
+        vehicleOrder[_chassis.design]--;
+        if (vehicleOrder[_chassis.design] == 0)
         {
-            workshops[i].Tick();
+            bool ordersStillPending = false;
+            foreach (int _REMAINING in vehicleOrder.Values)
+            {
+                if (_REMAINING > 0)
+                {
+                    ordersStillPending = true;
+                    break;
+                }
+            }
+
+            if (!ordersStillPending)
+            {
+                orderComplete = true;
+                Debug.Log("ORDER COMPLETE");
+            }
         }
     }
 
