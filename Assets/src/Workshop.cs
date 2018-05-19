@@ -84,8 +84,9 @@ public class Workshop : MonoBehaviour
                 foreach (VehiclePart _ATTACHED_PART in _attachedParts)
                 {
                     _viableParts.Remove(_ATTACHED_PART);
-                    REG.contents.Remove(_ATTACHED_PART);
+                    REG.contents.Remove(_ATTACHED_PART);                    
                 }
+                REG.RefactorStorage();
             }
             else
             {
@@ -109,8 +110,8 @@ public class Workshop : MonoBehaviour
         }
         else
         {
-//            Debug.Log(workshopIndex  + " needs CHASSIS");
-// no viable CHASSIS - request some
+            //            Debug.Log(workshopIndex  + " needs CHASSIS");
+            // no viable CHASSIS - request some
             L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig, requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG, Mathf.FloorToInt(REG.capacity * currentTask.ratio_chassis_to_parts)));
         }
     }

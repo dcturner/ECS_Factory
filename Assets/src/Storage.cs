@@ -189,7 +189,8 @@ public class Storage : MonoBehaviour
         {
             sendingPartsTo = _request.deliverTo;
 
-            VehiclePart_CHASSIS[] _chassisFound = FindChassis(_request.chassisVersion, _request.requiredParts).ToArray();
+            VehiclePart_CHASSIS[] _chassisFound =
+                FindChassis(_request.chassisVersion, _request.requiredParts).ToArray();
             int _totalFound = _chassisFound.Length;
             if (_totalFound > 0)
             {
@@ -197,6 +198,7 @@ public class Storage : MonoBehaviour
                 {
                     Array.Resize(ref _chassisFound, _request.maxParts);
                 }
+
                 pending_SEND = _chassisFound;
                 pending_REQUEST = null;
                 ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
@@ -211,7 +213,8 @@ public class Storage : MonoBehaviour
         }
     }
 
-    public List<VehiclePart_CHASSIS> FindChassis(int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
+    public List<VehiclePart_CHASSIS> FindChassis(int _chassisVersion,
+        Dictionary<VehiclePart_Config, int> _requiredParts)
     {
         List<VehiclePart_CHASSIS> _CHASSIS_LIST = new List<VehiclePart_CHASSIS>();
         foreach (VehiclePart _PART in contents)
@@ -220,31 +223,36 @@ public class Storage : MonoBehaviour
             if (_PART_CONFIG.partType == Vehicle_PartType.CHASSIS && _PART_CONFIG.partVersion == _chassisVersion)
             {
                 VehiclePart_CHASSIS _CHASSIS = _PART as VehiclePart_CHASSIS;
-                var _PARTS_FITTED = _CHASSIS.partsFitted;
-                int criteriaMet = 0;
-
-                // for each part missing, criteriaMet ++
-                foreach (KeyValuePair<VehiclePart_Config,int> _PAIR in _requiredParts)
+                if (_CHASSIS.partsNeeded.Count > 0)
                 {
-                    VehiclePart_Config _REQ_PART = _PAIR.Key;
-                    int _QUANTITY = _PAIR.Value;
-                    if (_PARTS_FITTED.ContainsKey(_REQ_PART))
-                    {
-                        criteriaMet += _QUANTITY - _PARTS_FITTED[_REQ_PART];
-                    }
-                    else
-                    {
-                        criteriaMet += _QUANTITY;
-                    }
-                }
+                    var _PARTS_FITTED = _CHASSIS.partsFitted;
+                    int criteriaMet = 0;
 
-                if (criteriaMet > 0)
-                {
-                    _CHASSIS.tempCriteriaMet = criteriaMet;
-                    _CHASSIS_LIST.Add(_CHASSIS);
+                    // for each part missing, criteriaMet ++
+                    foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _requiredParts)
+                    {
+                        VehiclePart_Config _REQ_PART = _PAIR.Key;
+                        int _QUANTITY = _PAIR.Value;
+                        if (_PARTS_FITTED.ContainsKey(_REQ_PART))
+                        {
+                            criteriaMet += _QUANTITY - _PARTS_FITTED[_REQ_PART];
+                        }
+                        else
+                        {
+                            criteriaMet += _QUANTITY;
+                        }
+                    }
+
+
+                    if (criteriaMet > 0)
+                    {
+                        _CHASSIS.tempCriteriaMet = criteriaMet;
+                        _CHASSIS_LIST.Add(_CHASSIS);
+                    }
                 }
             }
         }
+
         List<VehiclePart_CHASSIS> _CHASSIS_SORTED = _CHASSIS_LIST.OrderBy(c => c.tempCriteriaMet).ToList();
         return _CHASSIS_SORTED;
     }
@@ -304,7 +312,7 @@ public class Storage : MonoBehaviour
         }
     }
 
-    private void RefactorStorage()
+    public void RefactorStorage()
     {
         contents = contents.Where(vp => vp != null).Distinct().ToList();
         usedSpace = contents.Count;
