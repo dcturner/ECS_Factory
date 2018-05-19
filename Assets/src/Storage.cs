@@ -139,13 +139,18 @@ public class Storage : MonoBehaviour
                 ? _parts[index] as VehiclePart_CHASSIS
                 : _parts[index];
             contents.Add(_PART);
-            _PART.transform.position = storageLocations[usedSpace];
+            SetPartTransform(_PART.transform, usedSpace);
             index++;
             freeSpace--;
             usedSpace++;
         }
 
         pending_STORE = null;
+    }
+
+    private void SetPartTransform(Transform _partTransform, int _index)
+    {
+        _partTransform.position = storageLocations[_index];
     }
 
     public void RequestPart(VehiclePartRequest _request)
@@ -278,6 +283,7 @@ public class Storage : MonoBehaviour
             usedSpace--;
         }
 
+        RefactorStorage();
         sendingPartsTo.Recieve_Parts(pending_SEND);
         pending_SEND = null;
         ChangeState(StorageState.IDLE);
@@ -285,6 +291,7 @@ public class Storage : MonoBehaviour
 
     public void Recieve_Parts(VehiclePart[] _parts)
     {
+        RefactorStorage();
         if (currentState == StorageState.IDLE || currentState == StorageState.WAITING_FOR_DELIVERY)
         {
             // store
@@ -294,6 +301,17 @@ public class Storage : MonoBehaviour
         }
         else
         {
+        }
+    }
+
+    private void RefactorStorage()
+    {
+        contents = contents.Where(vp => vp != null).Distinct().ToList();
+        usedSpace = contents.Count;
+        freeSpace = capacity - usedSpace;
+        for (int i = 0; i < usedSpace; i++)
+        {
+            SetPartTransform(contents[i].transform, i);
         }
     }
 
