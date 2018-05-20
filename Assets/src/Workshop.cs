@@ -31,11 +31,10 @@ public class Workshop : MonoBehaviour
 
     public void Tick()
     {
-//        if (currentTask!=null)
-//        {
-//        PerformTask();
-//            // check if REG has the required pieces to perform the task
-//        }
+        if (currentTask!=null)
+        {
+        PerformTask();
+        }
     }
 
     // Perform the task as many times as possible
@@ -121,7 +120,7 @@ public class Workshop : MonoBehaviour
         }
         else
         {
-            //            Debug.Log(workshopIndex  + " needs CHASSIS");
+            Debug.Log(workshopIndex  + " needs CHASSIS");
             // no viable CHASSIS - request some
             L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
                 requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG,

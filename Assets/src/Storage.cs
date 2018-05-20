@@ -44,7 +44,7 @@ public class Storage : MonoBehaviour
     // Storage GRID layout
     private int cellsX, cellsY, cellsZ;
 
-    private void Awake()
+    public void Init()
     {
         DefineStorageLayout();
     }

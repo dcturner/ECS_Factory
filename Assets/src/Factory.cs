@@ -42,7 +42,14 @@ public class Factory : SerializedMonoBehaviour
     {
         INSTANCE = this;
         t = tickRate;
+        
+        // setup storage
         storage = FindObjectsOfType<Storage>();
+        foreach (Storage _STORAGE in storage)
+        {
+            _STORAGE.Init();
+        }
+        
         workshops = FindObjectsOfType<Workshop>().OrderBy(m => m.workshopIndex).ToList();
         storageCount = storage.Length;
         requiredParts = new Dictionary<VehiclePart_Config, int>();
@@ -130,7 +137,6 @@ public class Factory : SerializedMonoBehaviour
         // STEP ONE - order all the required parts
         VehicleDesign _DESIGN = vehicleOrder.Keys.First();
         List<VehiclePart_Assignment> _PARTS = new List<VehiclePart_Assignment>();
-        Debug.Log(_DESIGN.designName);
         foreach (VehiclePart_Assignment _REQUIRED_PART in _DESIGN.requiredParts)
         {
             _PARTS.Add(_REQUIRED_PART);
