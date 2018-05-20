@@ -31,22 +31,22 @@ public class Workshop : MonoBehaviour
 
     public void Tick()
     {
-        if (currentTask!=null)
-        {
-        PerformTask();
-            // check if REG has the required pieces to perform the task
-        }
+//        if (currentTask!=null)
+//        {
+//        PerformTask();
+//            // check if REG has the required pieces to perform the task
+//        }
     }
 
     // Perform the task as many times as possible
     void PerformTask()
     {
         VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
-        
+
         // Do I have a suitable chassis?
         List<VehiclePart_CHASSIS> _viableChassis =
             REG.FindChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
-        
+
         if (_viableChassis.Count > 0)
         {
             // which required parts do I have?
@@ -69,7 +69,7 @@ public class Workshop : MonoBehaviour
             if (_viableParts.Count > 0)
             {
                 Debug.Log("Viable parts - " + _viableParts.Count);
-                List<VehiclePart> _attachedParts= new List<VehiclePart>();
+                List<VehiclePart> _attachedParts = new List<VehiclePart>();
                 foreach (VehiclePart _VIABLE_PART in _viableParts)
                 {
                     foreach (VehiclePart_CHASSIS _VC in _viableChassis)
@@ -84,7 +84,7 @@ public class Workshop : MonoBehaviour
                 foreach (VehiclePart _ATTACHED_PART in _attachedParts)
                 {
                     _viableParts.Remove(_ATTACHED_PART);
-                    REG.contents.Remove(_ATTACHED_PART);                    
+                    REG.contents.Remove(_ATTACHED_PART);
                 }
 
                 foreach (VehiclePart_CHASSIS _CHASSIS in _viableChassis)
@@ -96,7 +96,8 @@ public class Workshop : MonoBehaviour
                         Factory.INSTANCE.VehicleComplete(_CHASSIS);
                     }
                 }
-                REG.RefactorStorage();
+
+//                REG.RefactorStorage();
             }
             else
             {
@@ -122,13 +123,15 @@ public class Workshop : MonoBehaviour
         {
             //            Debug.Log(workshopIndex  + " needs CHASSIS");
             // no viable CHASSIS - request some
-            L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig, requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG, Mathf.FloorToInt(REG.capacity * currentTask.ratio_chassis_to_parts)));
+            L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
+                requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG,
+                Mathf.FloorToInt(REG.capacity * currentTask.ratio_chassis_to_parts)));
         }
     }
-    
+
     public void RequestViableParts(VehiclePart_CHASSIS _chassis)
     {
-        foreach (KeyValuePair<VehiclePart_Config,int> _PAIR in currentTask.requiredParts)
+        foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in currentTask.requiredParts)
         {
             if (_PAIR.Key.partType != Vehicle_PartType.CHASSIS)
             {
@@ -141,7 +144,8 @@ public class Workshop : MonoBehaviour
                         partsToRequest++;
                     }
                 }
-                L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig,REG,partsToRequest));
+
+                L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG, partsToRequest));
                 REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
                 break;
 
@@ -174,7 +178,7 @@ public class WorkshopTask
         design = _design;
         requiredParts = _requiredParts;
         int partCount = 0;
-        foreach (KeyValuePair<VehiclePart_Config,int> _PAIR in requiredParts)
+        foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in requiredParts)
         {
             if (_PAIR.Key.partType != Vehicle_PartType.CHASSIS)
             {
@@ -184,6 +188,4 @@ public class WorkshopTask
 
         ratio_chassis_to_parts = 1 / (float) partCount;
     }
-
-    
 }

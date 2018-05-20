@@ -3045,6 +3045,7 @@ MonoBehaviour:
   chassisType: 0
   totalpartsFitted: 0
   tempCriteriaMet: 0
+  vehicleIsComplete: 0
 --- !u!114 &114767480080784848
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -18,20 +18,19 @@ public class Storage : MonoBehaviour
     private Storage sendingPartsTo;
     public Color colour;
     [PropertyRange(1, 1000)] public int taskDuration;
-
     // Total number of clusters along XYZ
     [TabGroup("Total")] [PropertyRange(1, 100)]
-    public int clusters_x, clusters_y, clusters_z;
+    public int linesX, linesY, linesZ;
 
     // How many cells make up a cluster?  XYZ
-    [TabGroup("ClusterSize")] [PropertyRange(1, 100)]
-    public int cluster_width, cluster_height, cluster_depth;
+    [TabGroup("GroupBy")] [PropertyRange(1, 100)]
+    public int lineLength, lines_groupBy_Y, lines_groupBy_Z;
 
     // How much space goes between clusters? XYZ
     [TabGroup("Gutters")] [PropertyRange(0, 10)]
     public int gutterX, gutterY, gutterZ;
 
-    private int width, height, depth;
+    private float width, height, depth;
     [ReadOnly] public int usedSpace, freeSpace, capacity, clusterCapacity, taskStep;
     [HideInInspector] public StorageState currentState;
 
@@ -39,8 +38,8 @@ public class Storage : MonoBehaviour
     [HideInInspector] public List<Vector3> aisleSpaces;
     [HideInInspector] public float factor;
     [HideInInspector] public List<VehiclePart> contents;
+    [HideInInspector] public List<StorageLine> storageLines;
     [HideInEditorMode] public VehiclePart[] pending_STORE, pending_SEND;
-    [HideInInspector] public VehiclePartRequest pending_REQUEST;
 
     // Storage GRID layout
     private int cellsX, cellsY, cellsZ;
@@ -58,45 +57,38 @@ public class Storage : MonoBehaviour
     private void DefineStorageLayout()
     {
         storageLocations = new List<Vector3>();
+        storageLines = new List<StorageLine>();
         aisleSpaces = new List<Vector3>();
         Vector3 _POS = transform.position;
 
-        Vector3 cellSize = new Vector3(0.75f, 0.75f, 0.75f);
-        clusterCapacity = cluster_width * cluster_height * cluster_depth;
-        capacity = clusterCapacity * (clusters_x * clusters_y * clusters_z);
+        clusterCapacity = lineLength * lines_groupBy_Y * lines_groupBy_Z;
+        capacity = clusterCapacity * (linesX * linesY * linesZ);
         freeSpace = capacity;
         usedSpace = 0;
 
-        width = (clusters_x * cluster_width) + ((clusters_x - 1) * gutterX);
-        height = (clusters_y * cluster_height) + ((clusters_y - 1) * gutterY);
-        depth = (clusters_z * cluster_depth) + ((clusters_z - 1) * gutterZ);
 
-        int wrapX = cluster_width + (gutterX);
-        int wrapY = cluster_height + (gutterY);
-        int wrapZ = cluster_depth + (gutterZ);
-
-        for (int cellX = 0; cellX < width; cellX++)
+        int lineIndex = 0;
+        for (int stackY = 0; stackY < linesY; stackY++)
         {
-            for (int cellY = 0; cellY < height; cellY++)
+            for (int stackZ = 0; stackZ < linesZ; stackZ++)
             {
-                for (int cellZ = 0; cellZ < depth; cellZ++)
+                for (int lineX = 0; lineX < linesX; lineX++)
                 {
-                    Vector3 _CELL_POS = _POS + new Vector3(cellX, cellY, cellZ);
-                    if (cellX % wrapX < cluster_width && cellY % wrapY < cluster_height &&
-                        cellZ % wrapZ < cluster_depth)
-                    {
-                        storageLocations.Add(_CELL_POS);
-                    }
-                    else
-                    {
-                        aisleSpaces.Add(_CELL_POS);
-                    }
+                    AddStorageLine(_POS + new Vector3((lineX * lineLength) + (gutterX * lineX), stackY + (gutterY * stackY),
+                        stackZ + (gutterZ * stackZ)) * Factory.INSTANCE.storageCellSize);
+                    lineIndex++;
                 }
             }
         }
-
-        Debug.Log(storageName + " locations: " + storageLocations.Count);
     }
+
+    void AddStorageLine(Vector3 _pos)
+    {
+        storageLines.Add(new StorageLine(lineLength, _pos));
+        capacity += lineLength;
+        freeSpace = capacity;
+    }
+
 
     public void ChangeState(StorageState _newState)
     {
@@ -110,10 +102,6 @@ public class Storage : MonoBehaviour
                     if (pending_STORE != null)
                     {
                         AttemptStore(pending_STORE);
-                    }
-                    else if (pending_REQUEST != null)
-                    {
-                        RequestPart(pending_REQUEST);
                     }
 
                     break;
@@ -132,25 +120,43 @@ public class Storage : MonoBehaviour
 
     private void AttemptStore(VehiclePart[] _parts)
     {
-        int index = 0;
-        while (freeSpace > 0 && index < _parts.Length)
+        
+        int partIndex = 0;
+        int lineIndex = 0;
+        while (partIndex < _parts.Length-1 && lineIndex < storageLines.Count)
         {
-            VehiclePart _PART = (_parts[index].partConfig.partType == Vehicle_PartType.CHASSIS)
-                ? _parts[index] as VehiclePart_CHASSIS
-                : _parts[index];
-            contents.Add(_PART);
-            SetPartTransform(_PART.transform, usedSpace);
-            index++;
-            freeSpace--;
-            usedSpace++;
-        }
+            StorageLine _LINE = storageLines[lineIndex];
+            for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
+            {
+                VehiclePart _PART = (_parts[partIndex].partConfig.partType == Vehicle_PartType.CHASSIS)
+                    ? _parts[partIndex] as VehiclePart_CHASSIS
+                    : _parts[partIndex];
+                if (_LINE.slots[slotIndex] == null)
+                {
+                    _LINE.slots[slotIndex] = _PART;
+                    SetPartTransform(_PART.transform, lineIndex, slotIndex);
+                    freeSpace--;
+                    usedSpace++;
+                    partIndex++;
+                    if (partIndex == _parts.Length)
+                    {
+                        return;
+                    }
+                }
+            }
 
-        pending_STORE = null;
+            lineIndex++;
+        }
     }
 
-    private void SetPartTransform(Transform _partTransform, int _index)
+    public VehiclePart[] FetchLine(int _index)
     {
-        _partTransform.position = storageLocations[_index];
+        return storageLines[_index].slots;
+    }
+
+    private void SetPartTransform(Transform _partTransform, int _lineIndex, int _slotIndex)
+    {
+        _partTransform.position = storageLines[_lineIndex].slotPositions[_slotIndex];
     }
 
     public void RequestPart(VehiclePartRequest _request)
@@ -168,15 +174,8 @@ public class Storage : MonoBehaviour
                 }
 
                 pending_SEND = _partsFound;
-                pending_REQUEST = null;
 
                 ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
-            }
-            else
-            {
-                pending_REQUEST = _request;
-                ChangeState(StorageState.WAITING_FOR_DELIVERY);
-                getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this, _request.maxParts * 2));
             }
         }
     }
@@ -200,15 +199,7 @@ public class Storage : MonoBehaviour
                 }
 
                 pending_SEND = _chassisFound;
-                pending_REQUEST = null;
                 ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
-            }
-            else
-            {
-                pending_REQUEST = _request;
-                ChangeState(StorageState.WAITING_FOR_DELIVERY);
-                getsPartsFrom.RequestChassis(new VehicleChassiRequest(_request.part, _request.chassisVersion,
-                    _request.requiredParts, this, _request.maxParts * 2));
             }
         }
     }
@@ -291,7 +282,7 @@ public class Storage : MonoBehaviour
             usedSpace--;
         }
 
-        RefactorStorage();
+//        RefactorStorage();
         sendingPartsTo.Recieve_Parts(pending_SEND);
         pending_SEND = null;
         ChangeState(StorageState.IDLE);
@@ -299,7 +290,7 @@ public class Storage : MonoBehaviour
 
     public void Recieve_Parts(VehiclePart[] _parts)
     {
-        RefactorStorage();
+//        RefactorStorage();
         if (currentState == StorageState.IDLE || currentState == StorageState.WAITING_FOR_DELIVERY)
         {
             // store
@@ -312,29 +303,35 @@ public class Storage : MonoBehaviour
         }
     }
 
-    public void RefactorStorage()
-    {
-        contents = contents.Where(vp => vp != null).Distinct().ToList();
-        usedSpace = contents.Count;
-        freeSpace = capacity - usedSpace;
-        for (int i = 0; i < usedSpace; i++)
-        {
-            SetPartTransform(contents[i].transform, i);
-        }
-    }
+//    public void RefactorStorage()
+//    {
+//        contents = contents.Where(vp => vp != null).Distinct().ToList();
+//        usedSpace = contents.Count;
+//        freeSpace = capacity - usedSpace;
+//        for (int i = 0; i < usedSpace; i++)
+//        {
+//            SetPartTransform(contents[i].transform, i);
+//        }
+//    }
 
 
     private void OnDrawGizmos()
     {
         Vector3 _POS = transform.position;
+        if (Factory.INSTANCE == null)
+        {
+            Factory.INSTANCE = FindObjectOfType<Factory>();
+        }
+
+        float cellSize = Factory.INSTANCE.storageCellSize;
         Gizmos.color = colour;
-        width = (clusters_x * cluster_width) + ((clusters_x - 1) * gutterX);
-        height = (clusters_y * cluster_height) + ((clusters_y - 1) * gutterY);
-        depth = (clusters_z * cluster_depth) + ((clusters_z - 1) * gutterZ);
+        width = ((linesX * lineLength) + ((linesX - 1) * gutterX)) * cellSize;
+        height = ((linesY * lines_groupBy_Y) + ((linesY - 1) * gutterY)) * cellSize;
+        depth = ((linesZ * lines_groupBy_Z) + ((linesZ - 1) * gutterZ)) * cellSize;
         Vector3 _SIZE = new Vector3(width, 0f, depth);
         GizmoHelpers.DrawRect(colour, _POS, width, depth, Log());
 
-        Vector3 _START = _POS + new Vector3(0f, 0f, depth * factor);
+        Vector3 _START = _POS + new Vector3(0f, 0f, (depth) * factor);
         GizmoHelpers.DrawLine(Color.white, _START, _START + new Vector3(width, 0f, 0f));
 
         // flash on action?
@@ -344,23 +341,21 @@ public class Storage : MonoBehaviour
 
         if (GIZMOS_DRAW_CELLS)
         {
-            Vector3 cellSize = new Vector3(0.75f, 0.75f, 0.75f);
+            Vector3 cell_drawSize = Vector3.one
+            * cellSize;
             if (storageLocations.Count == 0)
             {
-                int wrapX = cluster_width + (gutterX);
-                int wrapY = cluster_height + (gutterY);
-                int wrapZ = cluster_depth + (gutterZ);
-
-                for (int cellX = 0; cellX < width; cellX++)
+                for (int stackY = 0; stackY < linesY; stackY++)
                 {
-                    for (int cellY = 0; cellY < height; cellY++)
+                    for (int stackZ = 0; stackZ < linesZ; stackZ++)
                     {
-                        for (int cellZ = 0; cellZ < depth; cellZ++)
+                        for (int lineX = 0; lineX < linesX; lineX++)
                         {
-                            if (cellX % wrapX < cluster_width && cellY % wrapY < cluster_height &&
-                                cellZ % wrapZ < cluster_depth)
+                            for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
                             {
-                                Gizmos_DrawCell(_POS + new Vector3(cellX, cellY, cellZ), cellSize);
+                                Vector3 _LINE_POS = _POS + new Vector3(lineLength * lineX + (lineX * gutterX),
+                                                        stackY + (stackY * gutterY), stackZ + (stackZ * gutterZ)) * cellSize;
+                                Gizmos_DrawCell(_LINE_POS + new Vector3(slotIndex*cellSize, 0f, 0f), cell_drawSize);
                             }
                         }
                     }
@@ -372,12 +367,12 @@ public class Storage : MonoBehaviour
                 Gizmos.color = Color.grey;
                 foreach (Vector3 _STORAGE_LOCATION in storageLocations)
                 {
-                    Gizmos_DrawCell(_STORAGE_LOCATION, cellSize);
+                    Gizmos_DrawCell(_STORAGE_LOCATION, cell_drawSize);
                 }
             }
 
-            clusterCapacity = cluster_width * cluster_height * cluster_depth;
-            capacity = clusterCapacity * (clusters_x * clusters_y * clusters_z);
+            clusterCapacity = lineLength * lines_groupBy_Y * lines_groupBy_Z;
+            capacity = clusterCapacity * (linesX * linesY * linesZ);
         }
     }
 
@@ -424,5 +419,27 @@ public class VehicleChassiRequest : VehiclePartRequest
         requiredParts = _requiredParts;
         deliverTo = _deliverTo;
         maxParts = _maxParts;
+    }
+}
+
+public struct StorageLine
+{
+    public VehiclePart[] slots;
+    public Vector3[] slotPositions;
+    public int lineLength;
+    public bool empty, full;
+
+    public StorageLine(int _lineLength, Vector3 _pos)
+    {
+        lineLength = _lineLength;
+        slots = new VehiclePart[lineLength];
+        slotPositions = new Vector3[lineLength];
+        empty = true;
+        full = false;
+        for (int i = 0; i < lineLength; i++)
+        {
+            slots[i] = null;
+            slotPositions[i] = _pos + new Vector3(i*Factory.INSTANCE.storageCellSize, 0f, 0f);
+        }
     }
 }

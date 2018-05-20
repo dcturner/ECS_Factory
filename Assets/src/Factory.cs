@@ -19,6 +19,7 @@ public class Factory : SerializedMonoBehaviour
     public Storage PartsDeliveredTo;
     private int tick = 0;
     [PropertyRange(0.0000001f, 1f)] public float tickRate = 0.1f;
+    [PropertyRange(0.05f, 1f)] public float storageCellSize;
     private float t;
 
     public Storage HD, RAM, L3;
@@ -76,10 +77,12 @@ public class Factory : SerializedMonoBehaviour
                 VehiclePart_Config _partType = _PartCount.Key;
                 if (requiredParts.ContainsKey(_partType))
                 {
+                    Debug.Log("req: " + _partType + " x " + _TOTAL);
                     requiredParts[_partType] += _DESIGN.quantities[_partType] * _TOTAL;
                 }
                 else
                 {
+                    Debug.Log("req: " + _partType + " x " + _TOTAL);
                     requiredParts.Add(_partType, _DESIGN.quantities[_partType] * _TOTAL);
                 }
             }
@@ -105,19 +108,25 @@ public class Factory : SerializedMonoBehaviour
                 }
                 else
                 {
-                _LIST_PARTS.Add(_part_OBJ.GetComponent<VehiclePart>());
+                    _LIST_PARTS.Add(_part_OBJ.GetComponent<VehiclePart>());
                 }
             }
-            
+
             // parts are instantiated - now lets force_quickSave them into "PartsDeliveredTo" (usually RAM)
-            PartsDeliveredTo.Force_QuickSave(_LIST_CHASSIS.ToArray());
-            PartsDeliveredTo.Force_QuickSave(_LIST_PARTS.ToArray());
+            if (_LIST_CHASSIS.Count > 0)
+            {
+                PartsDeliveredTo.Force_QuickSave(_LIST_CHASSIS.ToArray());
+            }
+
+            if (_LIST_PARTS.Count > 0)
+            {
+                PartsDeliveredTo.Force_QuickSave(_LIST_PARTS.ToArray());
+            }
         }
     }
 
     private void ScheduleTasks()
     {
-        
         // STEP ONE - order all the required parts
         VehicleDesign _DESIGN = vehicleOrder.Keys.First();
         List<VehiclePart_Assignment> _PARTS = new List<VehiclePart_Assignment>();
@@ -126,6 +135,7 @@ public class Factory : SerializedMonoBehaviour
         {
             _PARTS.Add(_REQUIRED_PART);
         }
+
         workshopTasks = new List<WorkshopTask>();
 
         // STEP TWO - Depending on the approach (OOP / DOD), setup workshop tasks
@@ -137,12 +147,16 @@ public class Factory : SerializedMonoBehaviour
                 {
                     workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN, _VEHICLE_DESIGN.quantities));
                 }
+
+                foreach (Workshop _WORKSHOP in workshops)
+                {
+                    _WORKSHOP.currentTask = workshopTasks[0];
+                }
+
                 break;
             case FactoryMode.DOD:
                 break;
         }
-
-        workshops[0].currentTask = workshopTasks[0];
     }
 
     private void Update()
