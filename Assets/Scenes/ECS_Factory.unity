@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028334, g: 0.22571337, b: 0.3069219, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028353, g: 0.2257137, b: 0.30692255, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -547,7 +547,6 @@ MonoBehaviour:
   storageLocations: []
   aisleSpaces: []
   factor: 0
-  contents: []
   pending_STORE: []
   pending_SEND: []
 --- !u!4 &273678385 stripped
@@ -621,8 +620,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 282840810}
-  m_LocalRotation: {x: 0.3529894, y: -0.17423122, z: 0.067045845, w: 0.91681343}
-  m_LocalPosition: {x: 66.55777, y: 22.544071, z: -34.183495}
+  m_LocalRotation: {x: -0.22631526, y: 0.1831065, z: -0.04332397, w: -0.9557073}
+  m_LocalPosition: {x: 45.67486, y: 1.9829712, z: 33.67389}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -690,7 +689,6 @@ MonoBehaviour:
   storageLocations: []
   aisleSpaces: []
   factor: 0
-  contents: []
   pending_STORE: []
   pending_SEND: []
 --- !u!1 &991516661
@@ -755,6 +753,5 @@ MonoBehaviour:
   storageLocations: []
   aisleSpaces: []
   factor: 0
-  contents: []
   pending_STORE: []
   pending_SEND: []

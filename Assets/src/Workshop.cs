@@ -42,16 +42,17 @@ public class Workshop : MonoBehaviour
     {
         VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
 
-        // Do I have a suitable chassis?
-        List<VehiclePart_CHASSIS> _viableChassis =
-            REG.FindChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+        // Does REG have a viable Chassis?
+        int _REG_CHASSIS = REG.FindLineContainingChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+        List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
+            REG.GetViableChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
 
-        if (_viableChassis.Count > 0)
+        if (_VIABLE_CHASSIS.Count >0)
         {
             // which required parts do I have?
             List<VehiclePart> _viableParts = new List<VehiclePart>();
             List<VehiclePart_Config> _TASK_PARTS = currentTask.requiredParts.Keys.ToList();
-            foreach (VehiclePart _PART in REG.contents)
+            foreach (VehiclePart _PART in REG.storageLines[0].slots)
             {
 //                Debug.Log("Checking part: " + _PART.partConfig.name);
                 if (_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
@@ -71,7 +72,7 @@ public class Workshop : MonoBehaviour
                 List<VehiclePart> _attachedParts = new List<VehiclePart>();
                 foreach (VehiclePart _VIABLE_PART in _viableParts)
                 {
-                    foreach (VehiclePart_CHASSIS _VC in _viableChassis)
+                    foreach (VehiclePart_CHASSIS _VC in _VIABLE_CHASSIS)
                     {
                         if (_VC.AttachPart(_VIABLE_PART.partConfig, _VIABLE_PART.gameObject))
                         {
@@ -83,14 +84,14 @@ public class Workshop : MonoBehaviour
                 foreach (VehiclePart _ATTACHED_PART in _attachedParts)
                 {
                     _viableParts.Remove(_ATTACHED_PART);
-                    REG.contents.Remove(_ATTACHED_PART);
+                    REG.storageLines[0].slots.Remove(_ATTACHED_PART);
                 }
 
-                foreach (VehiclePart_CHASSIS _CHASSIS in _viableChassis)
+                foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
                 {
                     if (_CHASSIS.vehicleIsComplete)
                     {
-                        REG.contents.Remove(_CHASSIS);
+                        REG.storageLines[0].slots.Remove(_CHASSIS);
                         Destroy(_CHASSIS.gameObject);
                         Factory.INSTANCE.VehicleComplete(_CHASSIS);
                     }
@@ -100,7 +101,7 @@ public class Workshop : MonoBehaviour
             }
             else
             {
-                foreach (VehiclePart_CHASSIS _CHASSIS in _viableChassis)
+                foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
                 {
                     if (REG.currentState == StorageState.IDLE)
                     {
@@ -120,11 +121,9 @@ public class Workshop : MonoBehaviour
         }
         else
         {
-            Debug.Log(workshopIndex  + " needs CHASSIS");
             // no viable CHASSIS - request some
             L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
-                requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG,
-                Mathf.FloorToInt(REG.capacity * currentTask.ratio_chassis_to_parts)));
+                requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
         }
     }
 
@@ -144,7 +143,7 @@ public class Workshop : MonoBehaviour
                     }
                 }
 
-                L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG, partsToRequest));
+                L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG));
                 REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
                 break;
 
