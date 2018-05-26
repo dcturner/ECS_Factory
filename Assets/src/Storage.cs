@@ -15,7 +15,7 @@ public class Storage : MonoBehaviour
 
     public string storageName;
     public Storage getsPartsFrom;
-    private Storage sendingLineTo;
+    public Storage sendingLineTo;
     public Color colour;
 
     [PropertyRange(1, 1000)] public int taskDuration;
@@ -65,6 +65,7 @@ public class Storage : MonoBehaviour
 
         clusterCapacity = lineLength * lines_groupBy_Y * lines_groupBy_Z;
         capacity = clusterCapacity * (linesX * linesY * linesZ);
+
         freeSpace = capacity;
         usedSpace = 0;
 
@@ -87,9 +88,7 @@ public class Storage : MonoBehaviour
 
     void AddStorageLine(int _index, Vector3 _pos)
     {
-        storageLines.Add(new StorageLine(lineLength, _pos));
-        capacity += lineLength;
-        freeSpace = capacity;
+        storageLines.Add(new StorageLine(_index, lineLength, _pos));
     }
 
 
@@ -130,24 +129,45 @@ public class Storage : MonoBehaviour
             StorageLine _LINE = storageLines[lineIndex];
             for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
             {
-                VehiclePart _PART = (_parts[partIndex].partConfig.partType == Vehicle_PartType.CHASSIS)
-                    ? _parts[partIndex] as VehiclePart_CHASSIS
-                    : _parts[partIndex];
                 if (_LINE.slots[slotIndex] == null)
                 {
-                    _LINE.slots[slotIndex] = _PART;
-                    SetPartTransform(_PART.transform, lineIndex, slotIndex);
-                    freeSpace--;
-                    usedSpace++;
-                    partIndex++;
-                    if (partIndex == _parts.Length)
+                    if (_parts[slotIndex] != null)
                     {
-                        return;
+                        VehiclePart _PART = (_parts[partIndex].partConfig.partType == Vehicle_PartType.CHASSIS)
+                            ? _parts[partIndex] as VehiclePart_CHASSIS
+                            : _parts[partIndex];
+                        SetPartTransform(_PART.transform, lineIndex, slotIndex);
+                        FillSlot(lineIndex, slotIndex, _PART);
+                        partIndex++;
+                        if (partIndex == _parts.Length)
+                        {
+                            return;
+                        }
                     }
                 }
             }
 
             lineIndex++;
+        }
+    }
+
+    public void ClearSlot(int _lineIndex, int _slotIndex)
+    {
+        if (storageLines[_lineIndex].slots[_slotIndex] != null)
+        {
+            storageLines[_lineIndex].slots[_slotIndex] = null;
+            freeSpace++;
+            usedSpace--;
+        }
+    }
+
+    private void FillSlot(int _lineIndex, int _slotIndex, VehiclePart _part)
+    {
+        if (storageLines[_lineIndex].slots[_slotIndex] == null)
+        {
+            storageLines[_lineIndex].slots[_slotIndex] = _part;
+            freeSpace--;
+            usedSpace++;
         }
     }
 
@@ -161,21 +181,24 @@ public class Storage : MonoBehaviour
         if (currentState == StorageState.IDLE)
         {
             sendingLineTo = _request.deliverTo;
-            StorageLine targetLine;
             foreach (StorageLine _LINE in storageLines)
             {
                 VehiclePart[] _SLOTS = _LINE.slots.ToArray();
                 for (int i = 0; i < lineLength; i++)
                 {
-                    if (_SLOTS[i].partConfig == _request.part)
+                    if (_SLOTS[i] != null)
                     {
-                        pending_SEND = _LINE.slots.ToArray();
-                        pendingLineSend = _LINE;
-                        ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
-                        return;
+                        if (_SLOTS[i].partConfig == _request.part)
+                        {
+                            pending_SEND = _LINE.slots.ToArray();
+                            pendingLineSend = _LINE;
+                            ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
+                            return;
+                        }
                     }
                 }
             }
+
             ChangeState(StorageState.WAITING_FOR_DELIVERY);
             getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
         }
@@ -197,7 +220,8 @@ public class Storage : MonoBehaviour
             }
             else
             {
-                getsPartsFrom.RequestChassis(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
+                getsPartsFrom.RequestChassis(new VehicleChassiRequest(_request.part, _request.chassisVersion,
+                    _request.requiredParts, this));
             }
         }
     }
@@ -245,7 +269,6 @@ public class Storage : MonoBehaviour
                                 }
                                 else
                                 {
-                                    Debug.Log(storageName + "chassis found on line " + lineIndex);
                                     return lineIndex;
                                 }
                             }
@@ -281,7 +304,6 @@ public class Storage : MonoBehaviour
                         _PART_CONFIG.partVersion == _chassisVersion)
                     {
                         VehiclePart_CHASSIS _CHASSIS = _SLOT_PART as VehiclePart_CHASSIS;
-
                         // Proceed only if the chassis still needs parts O_o
                         if (_CHASSIS.partsNeeded.Count > 0)
                         {
@@ -299,6 +321,10 @@ public class Storage : MonoBehaviour
                                     {
                                         _result.Add(_CHASSIS);
                                     }
+                                }
+                                else
+                                {
+                                    _result.Add(_CHASSIS);
                                 }
                             }
                         }
@@ -336,18 +362,42 @@ public class Storage : MonoBehaviour
 
     private void READY_TO_DISPATCH()
     {
+        for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
+        {
+            ClearSlot(pendingLineSend.index, slotIndex);
+        }
+
         storageLines.Remove(pendingLineSend);
         sendingLineTo.RecieveParts(pending_SEND);
+        ChangeState(StorageState.IDLE);
     }
 
 
     public void RecieveParts(VehiclePart[] _parts)
     {
+        //Debug.Log(storageName +  " receieved " + _parts.Length);
         if (currentState == StorageState.IDLE || currentState == StorageState.WAITING_FOR_DELIVERY)
         {
-            // store
-            AttemptStore(_parts);
-            ChangeState(StorageState.IDLE);
+            if (freeSpace > 0)
+            {
+                // we have some room, try to store
+                AttemptStore(_parts);
+                ChangeState(StorageState.IDLE);
+            }
+            else
+            {
+                // no room available - ditch line zero
+                List<VehiclePart> _PARTS_TO_SEND = new List<VehiclePart>();
+                for (int i = 0; i < lineLength; i++)
+                {
+                    _PARTS_TO_SEND.Add(storageLines[0].slots[i]);
+                    ClearSlot(0, i);
+                }
+
+                pending_SEND = _PARTS_TO_SEND.ToArray();
+                sendingLineTo = getsPartsFrom;
+                ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
+            }
         }
         else
         {
@@ -464,13 +514,15 @@ public class VehicleChassiRequest : VehiclePartRequest
 
 public struct StorageLine
 {
+    public int index;
     public List<VehiclePart> slots;
     public Vector3[] slotPositions;
     public int lineLength;
     public bool empty, full;
 
-    public StorageLine(int _lineLength, Vector3 _pos)
+    public StorageLine(int _index, int _lineLength, Vector3 _pos)
     {
+        index = _index;
         lineLength = _lineLength;
         slots = new List<VehiclePart>(lineLength);
         slotPositions = new Vector3[lineLength];

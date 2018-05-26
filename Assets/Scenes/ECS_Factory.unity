@@ -527,6 +527,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   storageName: RAM
   getsPartsFrom: {fileID: 398428904}
+  sendingLineTo: {fileID: 0}
   colour: {r: 0, g: 0, b: 0, a: 1}
   taskDuration: 20
   linesX: 16
@@ -669,6 +670,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   storageName: HD
   getsPartsFrom: {fileID: 0}
+  sendingLineTo: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
   taskDuration: 25
   linesX: 16
@@ -733,6 +735,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   storageName: L3
   getsPartsFrom: {fileID: 268225004}
+  sendingLineTo: {fileID: 0}
   colour: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
   taskDuration: 15
   linesX: 16

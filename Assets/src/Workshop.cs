@@ -31,99 +31,134 @@ public class Workshop : MonoBehaviour
 
     public void Tick()
     {
-        if (currentTask!=null)
+        if (currentTask != null)
         {
-        PerformTask();
+            PerformTask();
         }
     }
 
     // Perform the task as many times as possible
     void PerformTask()
     {
-        VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
-
-        // Does REG have a viable Chassis?
-        int _REG_CHASSIS = REG.FindLineContainingChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
-        List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
-            REG.GetViableChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
-
-        if (_VIABLE_CHASSIS.Count >0)
+        if (REG.currentState == StorageState.IDLE)
         {
-            // which required parts do I have?
-            List<VehiclePart> _viableParts = new List<VehiclePart>();
-            List<VehiclePart_Config> _TASK_PARTS = currentTask.requiredParts.Keys.ToList();
-            foreach (VehiclePart _PART in REG.storageLines[0].slots)
-            {
-//                Debug.Log("Checking part: " + _PART.partConfig.name);
-                if (_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
-                {
-//                    Debug.Log("not chassis found: " + _PART.partConfig.name);
-                    if (_TASK_PARTS.Contains(_PART.partConfig))
-                    {
-//                        Debug.Log("Part IS found in task list ("+ _PART.partConfig.name +")");
-                        _viableParts.Add(_PART);
-                    }
-                }
-            }
+            VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
 
-            if (_viableParts.Count > 0)
+            // Does REG have a viable Chassis?
+            List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
+                REG.GetViableChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+
+            if (_VIABLE_CHASSIS.Count > 0)
             {
-                Debug.Log("Viable parts - " + _viableParts.Count);
-                List<VehiclePart> _attachedParts = new List<VehiclePart>();
-                foreach (VehiclePart _VIABLE_PART in _viableParts)
+                // which required parts do I have?
+                List<VehiclePart> _viableParts = new List<VehiclePart>();
+                List<VehiclePart_Config> _TASK_PARTS = currentTask.requiredParts.Keys.ToList();
+                for (int SLOT_INDEX = 0; SLOT_INDEX < REG.lineLength; SLOT_INDEX++)
                 {
-                    foreach (VehiclePart_CHASSIS _VC in _VIABLE_CHASSIS)
+                    if (REG.storageLines[0].slots[SLOT_INDEX] != null)
                     {
-                        if (_VC.AttachPart(_VIABLE_PART.partConfig, _VIABLE_PART.gameObject))
+                        var _PART = REG.storageLines[0].slots[SLOT_INDEX];
+//                Debug.Log("Checking part: " + _PART.partConfig.name);
+                        if (_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
                         {
-                            _attachedParts.Add(_VIABLE_PART);
+//                    Debug.Log("not chassis found: " + _PART.partConfig.name);
+                            if (_TASK_PARTS.Contains(_PART.partConfig))
+                            {
+//                        Debug.Log("Part IS found in task list ("+ _PART.partConfig.name +")");
+                                _viableParts.Add(_PART);
+                            }
                         }
                     }
                 }
 
-                foreach (VehiclePart _ATTACHED_PART in _attachedParts)
+                if (_viableParts.Count > 0)
                 {
-                    _viableParts.Remove(_ATTACHED_PART);
-                    REG.storageLines[0].slots.Remove(_ATTACHED_PART);
-                }
-
-                foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
-                {
-                    if (_CHASSIS.vehicleIsComplete)
+                    Debug.Log("Viable parts - " + _viableParts.Count);
+                    List<VehiclePart> _attachedParts = new List<VehiclePart>();
+                    foreach (VehiclePart _VIABLE_PART in _viableParts)
                     {
-                        REG.storageLines[0].slots.Remove(_CHASSIS);
-                        Destroy(_CHASSIS.gameObject);
-                        Factory.INSTANCE.VehicleComplete(_CHASSIS);
+                        foreach (VehiclePart_CHASSIS _VC in _VIABLE_CHASSIS)
+                        {
+                            if (_VC.AttachPart(_VIABLE_PART.partConfig, _VIABLE_PART.gameObject))
+                            {
+                                _attachedParts.Add(_VIABLE_PART);
+                            }
+                        }
                     }
-                }
+
+                    foreach (VehiclePart _ATTACHED_PART in _attachedParts)
+                    {
+                        _viableParts.Remove(_ATTACHED_PART);
+                        REG.storageLines[0].slots.Remove(_ATTACHED_PART);
+                    }
+
+                    foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
+                    {
+                        if (_CHASSIS.vehicleIsComplete)
+                        {
+                            REG.storageLines[0].slots.Remove(_CHASSIS);
+                            Destroy(_CHASSIS.gameObject);
+                            Factory.INSTANCE.VehicleComplete(_CHASSIS);
+                        }
+                    }
 
 //                REG.RefactorStorage();
-            }
-            else
-            {
-                foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
+                }
+                else
                 {
-                    if (REG.currentState == StorageState.IDLE)
+                    // no action can be undertaken - do we have room to load a chassis?
+                    if (REG.freeSpace > 0)
                     {
-                        RequestViableParts(_CHASSIS);
+                        Debug.Log("space available in REG");
+                        foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
+                        {
+                            if (REG.currentState == StorageState.IDLE)
+                            {
+                                RequestViableParts(_CHASSIS);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
                     }
                     else
                     {
-                        break;
+                        // no space available - get rid of everything except one viable chassis
+                        Debug.Log("NO ROOM IN REG - DITCH");
+                        List<VehiclePart> _PARTS_TO_DITCH = new List<VehiclePart>();
+                        bool firstChassisEncountered = true;
+                        for (int SLOT_INDEX = 0; SLOT_INDEX < REG.lineLength; SLOT_INDEX++)
+                        {
+                            VehiclePart _PART = REG.storageLines[0].slots[SLOT_INDEX];
+                            if (firstChassisEncountered && _VIABLE_CHASSIS.Contains(_PART as VehiclePart_CHASSIS))
+                            {
+                                firstChassisEncountered = false;
+                            }
+                            else
+                            {
+                                _PARTS_TO_DITCH.Add(_PART);
+                            }
+                        }
+
+                        REG.pending_SEND = _PARTS_TO_DITCH.ToArray();
+                        REG.sendingLineTo = L1;
+                        REG.ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
                     }
                 }
+
+                // Can I perform the assigned task?
+                // do I have any required parts AND a suitable chassis? - if so, DO IT
+
+                // if not, order the parts for the task
             }
-
-            // Can I perform the assigned task?
-            // do I have any required parts AND a suitable chassis? - if so, DO IT
-
-            // if not, order the parts for the task
-        }
-        else
-        {
-            // no viable CHASSIS - request some
-            L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
-                requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
+            else
+            {
+                // no viable CHASSIS - request some
+                Debug.Log("REG needs chassis");
+                L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
+                    requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
+            }
         }
     }
 
