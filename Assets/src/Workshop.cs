@@ -46,7 +46,7 @@ public class Workshop : MonoBehaviour
 
             // Does REG have a viable Chassis?
             List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
-                REG.GetViableChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+                REG.FindChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
 
             if (_VIABLE_CHASSIS.Count > 0)
             {
@@ -155,7 +155,7 @@ public class Workshop : MonoBehaviour
             else
             {
                 // no viable CHASSIS - request some
-                Debug.Log("REG needs chassis");
+                //Debug.Log("REG needs chassis");
                 L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
                     requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
             }

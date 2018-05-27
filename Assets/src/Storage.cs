@@ -105,13 +105,22 @@ public class Storage : MonoBehaviour
         if (currentState != _newState)
         {
             currentState = _newState;
-            //            Debug.Log(ToString() + currentState);
             switch (currentState)
             {
                 case StorageState.IDLE:
                     if (parts_IN != null)
                     {
                         AttemptStore(parts_IN);
+                    }
+
+                    // grab chassis / part if a request is pending
+                    if (pending_CHASSIS_request != null)
+                    {
+                        RequestChassis(pending_CHASSIS_request);
+                    }
+                    else if (pending_PART_request != null)
+                    {
+                        RequestPart(pending_PART_request);
                     }
 
                     break;
@@ -147,84 +156,148 @@ public class Storage : MonoBehaviour
     }
     #endregion State / Update >
     #region < Send / Recieve
-    // Check within CONTENTS for chassis that meet the required criteria (PART TYPE MISSING)
-    // e.g. find chassis that still need wheels
-    public void RequestChassis(VehicleChassiRequest _request)
+
+    // REQUESTS
+
+    public void RequestPart(VehiclePartRequest _request)
     {
         if (currentState == StorageState.IDLE)
-        {
-            sendingLineTo = _request.deliverTo;
-            int lineContainingChassis =
-                FindLineContainingChassis(_request.chassisVersion, _request.requiredParts);
-            if (lineContainingChassis != -1)
-            {
-                parts_OUT = storageLines[lineContainingChassis].slots.ToArray();
-                ChangeState(StorageState.FETCHING);
+            
+        { // I am free to take orders
+            if (freeSpace >= lineLength)
+            { // do I have space for a new line?
+                Attempt_PART_request(_request);
             }
             else
-            {
-                getsPartsFrom.RequestChassis(new VehicleChassiRequest(_request.part, _request.chassisVersion,
-                    _request.requiredParts, this));
+            { // no room, DUMP a line
+                pending_PART_request = _request;
+                pending_CHASSIS_request = null;
+                Dump_LINE();
+            }
+        }
+    }
+    public void RequestChassis(VehicleChassiRequest _request)
+    {
+        
+        if (currentState == StorageState.IDLE)
+        { // I am free to take orders
+            if (freeSpace >= lineLength)
+            { // do I have space for a new line?
+                Attempt_CHASSIS_request(_request);
+            }
+            else
+            { // no room, DUMP a line
+                pending_CHASSIS_request = _request;
+                pending_PART_request = null;
+                Dump_LINE();
             }
         }
     }
 
-    public int FindLineContainingChassis(int _chassisVersion,
-        Dictionary<VehiclePart_Config, int> _requiredParts)
+    // ATTEMPT TO EXECUTE REQUESTS
+    private void Attempt_PART_request(VehiclePartRequest _request)
     {
-        // Iterate through LINES
-        for (int lineIndex = 0; lineIndex < storageLines.Count; lineIndex++)
+        pending_PART_request = null;
+        sendingLineTo = _request.deliverTo;
+        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
         {
-            StorageLine _LINE = storageLines[lineIndex];
-
-            // iterate through SLOTS
-            for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
+            StorageLine _LINE = storageLines[_lineIndex];
+            var _SLOTS = _LINE.slots;
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
             {
-                if (_LINE.slots[slotIndex] != null)
+                if (_SLOTS[_slotIndex] != null)
                 {
-                    VehiclePart _SLOT_PART = _LINE.slots[slotIndex];
-
-                    VehiclePart_Config _PART_CONFIG = _SLOT_PART.partConfig;
-
-                    // Proceed only if the current SLOT PART is the right type of chassis
-                    if (_PART_CONFIG.partType == Vehicle_PartType.CHASSIS &&
-                        _PART_CONFIG.partVersion == _chassisVersion)
+                    if (_SLOTS[_slotIndex].partConfig == _request.part)
                     {
-                        VehiclePart_CHASSIS _CHASSIS = _SLOT_PART as VehiclePart_CHASSIS;
-
-                        // Proceed only if the chassis still needs parts O_o
-                        if (_CHASSIS.partsNeeded.Count > 0)
-                        {
-                            var _PARTS_FITTED = _CHASSIS.partsFitted;
-
-                            // If chassis has less a defecit of our required parts, grab it
-                            foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _requiredParts)
-                            {
-                                VehiclePart_Config _REQ_PART = _PAIR.Key;
-                                int _QUANTITY = _PAIR.Value;
-                                if (_CHASSIS.partsFitted.ContainsKey(_REQ_PART))
-                                {
-                                    if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
-                                    {
-                                        Debug.Log(storageName + "chassis found on line " + lineIndex);
-                                        return lineIndex;
-                                    }
-                                }
-                                else
-                                {
-                                    return lineIndex;
-                                }
-                            }
-                        }
+                        parts_OUT = _LINE.slots.ToArray();
+                        pendingLineSend = _LINE;
+                        ChangeState(StorageState.FETCHING);
+                        return;
                     }
                 }
             }
         }
 
-        return -1;
+        // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
+        ChangeState(StorageState.WAITING);
+        pending_PART_request = _request;
+        getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
     }
 
-    public List<VehiclePart_CHASSIS> GetViableChassis(int _chassisVersion,
+    private void Attempt_CHASSIS_request(VehicleChassiRequest _request)
+    {
+        pending_CHASSIS_request = null;
+        sendingLineTo = _request.deliverTo;
+
+        // for StorageLines
+        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+        {
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                if (IsChassisViable(_lineIndex, _slotIndex, _request))
+                {
+                    parts_OUT = storageLines[_lineIndex].slots.ToArray();
+                    pendingLineSend = storageLines[_lineIndex];
+                    ChangeState(StorageState.FETCHING);
+                    return;
+                }
+            }
+        }
+
+        // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
+        ChangeState(StorageState.WAITING);
+        pending_CHASSIS_request = _request;
+        getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
+    }
+
+    private bool IsChassisViable(int _lineIndex, int _slotIndex, VehicleChassiRequest _request)
+    {
+
+        StorageLine _LINE = storageLines[_lineIndex];
+        VehiclePart _SLOT = _LINE.slots[_slotIndex];
+        VehiclePart_CHASSIS _CHASSIS = null;
+        if (_SLOT != null)
+        {
+            if (_SLOT.partConfig.partType == Vehicle_PartType.CHASSIS)
+            { // part IS a chassis
+
+                if (_SLOT.partConfig.partVersion == _request.chassisVersion)
+                { // is Correct chassis type
+
+                    _CHASSIS = _SLOT as VehiclePart_CHASSIS;
+                }
+            }
+        }
+
+        if (_CHASSIS != null)
+        {
+            if (_CHASSIS.partsNeeded.Count > 0)
+            {
+                var _PARTS_FITTED = _CHASSIS.partsFitted;
+
+                // If chassis has less a defecit of our required parts, grab it
+                foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _request.requiredParts)
+                {
+                    VehiclePart_Config _REQ_PART = _PAIR.Key;
+                    int _QUANTITY = _PAIR.Value;
+                    if (_CHASSIS.partsFitted.ContainsKey(_REQ_PART))
+                    {
+                        if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public List<VehiclePart_CHASSIS> FindChassis(int _chassisVersion,
         Dictionary<VehiclePart_Config, int> _requiredParts)
     {
         List<VehiclePart_CHASSIS> _result = new List<VehiclePart_CHASSIS>();
@@ -275,24 +348,7 @@ public class Storage : MonoBehaviour
                 }
             }
         }
-
         return _result;
-    }
-    public void Force_QuickSave(VehiclePart[] _parts)
-    {
-        AttemptStore(_parts);
-    }
-
-    private void READY_TO_DISPATCH()
-    {
-        for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
-        {
-            ClearSlot(pendingLineSend.index, slotIndex);
-        }
-
-        storageLines.Remove(pendingLineSend);
-        sendingLineTo.RecieveParts(parts_OUT);
-        ChangeState(StorageState.IDLE);
     }
 
     public void RecieveParts(VehiclePart[] _parts)
@@ -326,6 +382,18 @@ public class Storage : MonoBehaviour
             parts_IN = _parts;
         }
     }
+
+    private void READY_TO_DISPATCH()
+    {
+        for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
+        {
+            ClearSlot(pendingLineSend.index, slotIndex);
+        }
+
+        storageLines.Remove(pendingLineSend);
+        sendingLineTo.RecieveParts(parts_OUT);
+        ChangeState(StorageState.IDLE);
+    }
     #endregion Send / Recieve >
     #region < Slot Management
     private void AttemptStore(VehiclePart[] _parts)
@@ -358,6 +426,11 @@ public class Storage : MonoBehaviour
             lineIndex++;
         }
     }
+    public void Force_QuickSave(VehiclePart[] _parts)
+    {
+        AttemptStore(_parts);
+    }
+
     public void ClearSlot(int _lineIndex, int _slotIndex)
     {
         if (storageLines[_lineIndex].slots[_slotIndex] != null)
@@ -384,51 +457,7 @@ public class Storage : MonoBehaviour
         _partTransform.position = storageLines[_lineIndex].slotPositions[_slotIndex];
     }
 
-    public void RequestPart(VehiclePartRequest _request)
-    {
-        if (currentState == StorageState.IDLE)
-        { // I am free to take orders
 
-            if (freeSpace >= lineLength)
-            { // do I have space for a new line?
-                BeginRequest(_request);
-            }
-            else
-            { // no room, DUMP a line
-                pending_PART_request = _request;
-                Dump_LINE();
-            }
-        }
-    }
-
-    // Send the first line you encounter with a matching part
-    private void BeginRequest(VehiclePartRequest _request)
-    {
-        pending_PART_request = null;
-        sendingLineTo = _request.deliverTo;
-        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
-        {
-            StorageLine _LINE = storageLines[_lineIndex];
-            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
-            {
-                VehiclePart[] _SLOTS = _LINE.slots.ToArray();
-                if (_SLOTS[_slotIndex] != null)
-                {
-                    if (_SLOTS[_slotIndex].partConfig == _request.part)
-                    {
-                        parts_OUT = _LINE.slots.ToArray();
-                        pendingLineSend = _LINE;
-                        ChangeState(StorageState.FETCHING);
-                        return;
-                    }
-                }
-            }
-        }
-
-        // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
-        ChangeState(StorageState.WAITING);
-        getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
-    }
 
     public void Dump_LINE(int _lineIndex = 0)
     {
