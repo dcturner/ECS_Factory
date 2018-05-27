@@ -104,6 +104,7 @@ public class Storage : MonoBehaviour
     {
         if (currentState != _newState)
         {
+            taskStep = 0;
             currentState = _newState;
             switch (currentState)
             {
@@ -162,7 +163,7 @@ public class Storage : MonoBehaviour
     public void RequestPart(VehiclePartRequest _request)
     {
         if (currentState == StorageState.IDLE)
-            
+
         { // I am free to take orders
             if (freeSpace >= lineLength)
             { // do I have space for a new line?
@@ -178,7 +179,7 @@ public class Storage : MonoBehaviour
     }
     public void RequestChassis(VehicleChassiRequest _request)
     {
-        
+
         if (currentState == StorageState.IDLE)
         { // I am free to take orders
             if (freeSpace >= lineLength)
@@ -234,7 +235,7 @@ public class Storage : MonoBehaviour
         {
             for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
             {
-                if (IsChassisViable(_lineIndex, _slotIndex, _request))
+                if (IsChassisViable(_lineIndex, _slotIndex, _request.chassisVersion, _request.requiredParts))
                 {
                     parts_OUT = storageLines[_lineIndex].slots.ToArray();
                     pendingLineSend = storageLines[_lineIndex];
@@ -250,9 +251,8 @@ public class Storage : MonoBehaviour
         getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
     }
 
-    private bool IsChassisViable(int _lineIndex, int _slotIndex, VehicleChassiRequest _request)
+    public bool IsChassisViable(int _lineIndex, int _slotIndex, int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
     {
-
         StorageLine _LINE = storageLines[_lineIndex];
         VehiclePart _SLOT = _LINE.slots[_slotIndex];
         VehiclePart_CHASSIS _CHASSIS = null;
@@ -261,7 +261,7 @@ public class Storage : MonoBehaviour
             if (_SLOT.partConfig.partType == Vehicle_PartType.CHASSIS)
             { // part IS a chassis
 
-                if (_SLOT.partConfig.partVersion == _request.chassisVersion)
+                if (_SLOT.partConfig.partVersion == _chassisVersion)
                 { // is Correct chassis type
 
                     _CHASSIS = _SLOT as VehiclePart_CHASSIS;
@@ -276,7 +276,7 @@ public class Storage : MonoBehaviour
                 var _PARTS_FITTED = _CHASSIS.partsFitted;
 
                 // If chassis has less a defecit of our required parts, grab it
-                foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _request.requiredParts)
+                foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _requiredParts)
                 {
                     VehiclePart_Config _REQ_PART = _PAIR.Key;
                     int _QUANTITY = _PAIR.Value;
@@ -297,63 +297,11 @@ public class Storage : MonoBehaviour
         return false;
     }
 
-    public List<VehiclePart_CHASSIS> FindChassis(int _chassisVersion,
-        Dictionary<VehiclePart_Config, int> _requiredParts)
-    {
-        List<VehiclePart_CHASSIS> _result = new List<VehiclePart_CHASSIS>();
-        // Iterate through LINES
-        for (int lineIndex = 0; lineIndex < storageLines.Count; lineIndex++)
-        {
-            StorageLine _LINE = storageLines[lineIndex];
 
-            // iterate through SLOTS
-            for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
-            {
-                if (_LINE.slots[slotIndex] != null)
-                {
-                    VehiclePart _SLOT_PART = _LINE.slots[slotIndex];
-
-                    VehiclePart_Config _PART_CONFIG = _SLOT_PART.partConfig;
-
-                    // Proceed only if the current SLOT PART is the right type of chassis
-                    if (_PART_CONFIG.partType == Vehicle_PartType.CHASSIS &&
-                        _PART_CONFIG.partVersion == _chassisVersion)
-                    {
-                        VehiclePart_CHASSIS _CHASSIS = _SLOT_PART as VehiclePart_CHASSIS;
-                        // Proceed only if the chassis still needs parts O_o
-                        if (_CHASSIS.partsNeeded.Count > 0)
-                        {
-                            var _PARTS_FITTED = _CHASSIS.partsFitted;
-                            int criteriaMet = 0;
-
-                            // If chassis has less a defecit of our required parts, grab it
-                            foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _requiredParts)
-                            {
-                                VehiclePart_Config _REQ_PART = _PAIR.Key;
-                                int _QUANTITY = _PAIR.Value;
-                                if (_CHASSIS.partsFitted.ContainsKey(_REQ_PART))
-                                {
-                                    if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
-                                    {
-                                        _result.Add(_CHASSIS);
-                                    }
-                                }
-                                else
-                                {
-                                    _result.Add(_CHASSIS);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return _result;
-    }
 
     public void RecieveParts(VehiclePart[] _parts)
     {
-        //Debug.Log(storageName +  " receieved " + _parts.Length);
+        Debug.Log(storageName + " receieved " + _parts.Length);
         if (currentState == StorageState.IDLE || currentState == StorageState.WAITING)
         {
             if (freeSpace > 0)
@@ -385,12 +333,7 @@ public class Storage : MonoBehaviour
 
     private void READY_TO_DISPATCH()
     {
-        for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
-        {
-            ClearSlot(pendingLineSend.index, slotIndex);
-        }
-
-        storageLines.Remove(pendingLineSend);
+        Debug.Log(storageName + " sending to " + sendingLineTo.storageName);
         sendingLineTo.RecieveParts(parts_OUT);
         ChangeState(StorageState.IDLE);
     }
@@ -457,8 +400,6 @@ public class Storage : MonoBehaviour
         _partTransform.position = storageLines[_lineIndex].slotPositions[_slotIndex];
     }
 
-
-
     public void Dump_LINE(int _lineIndex = 0)
     {
         Dump_SLOTS(lineLength, _lineIndex);
@@ -468,6 +409,7 @@ public class Storage : MonoBehaviour
 
         if (currentState == StorageState.IDLE)
         {
+            Debug.Log(storageName + " DUMP");
             ChangeState(StorageState.FETCHING);
             List<VehiclePart> dumpList = new List<VehiclePart>();
             StorageLine _LINE = storageLines[_lineIndex];
@@ -479,10 +421,45 @@ public class Storage : MonoBehaviour
                     ClearSlot(_lineIndex, _slotIndex);
                 }
             }
+            sendingLineTo = getsPartsFrom;
+            parts_OUT = dumpList.ToArray();
         }
+
     }
 
+    public void DUMP_fromLine_exceptType(int _lineIndex, Vehicle_PartType _keepThisPart, int _maxKept)
+    {
+        if (currentState == StorageState.IDLE)
+        {
+            int partsKept = 0;
+            ChangeState(StorageState.FETCHING);
+            List<VehiclePart> dumpList = new List<VehiclePart>();
+            StorageLine _LINE = storageLines[_lineIndex];
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                VehiclePart _PART = _LINE.slots[_slotIndex];
 
+                if (_PART != null)
+                {
+                    if (_PART.partConfig.partType != _keepThisPart)
+                    {
+                        dumpList.Add(_PART);
+                        ClearSlot(_lineIndex, _slotIndex);
+                    }else{
+                        if (partsKept < _maxKept)
+                        {
+                            partsKept++;
+                        }else{
+                            dumpList.Add(_PART);
+                            ClearSlot(_lineIndex, _slotIndex);
+                        }
+                    }
+                }
+            }
+            sendingLineTo = getsPartsFrom;
+            parts_OUT = dumpList.ToArray();
+        }
+    }
 
     private void OnDrawGizmos()
     {

@@ -46,25 +46,28 @@ public class Workshop : MonoBehaviour
 
             // Does REG have a viable Chassis?
             List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
-                REG.FindChassis(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+                FindChassis_in_REG(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
 
             if (_VIABLE_CHASSIS.Count > 0)
             {
                 // which required parts do I have?
                 List<VehiclePart> _viableParts = new List<VehiclePart>();
                 List<VehiclePart_Config> _TASK_PARTS = currentTask.requiredParts.Keys.ToList();
-                for (int SLOT_INDEX = 0; SLOT_INDEX < REG.lineLength; SLOT_INDEX++)
+
+
+                // If part is NOT a chassis and is used in the current TASK - add it to VIABLE_PARTS
+                for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
                 {
-                    if (REG.storageLines[0].slots[SLOT_INDEX] != null)
+                    if (REG.storageLines[0].slots[_slotIndex] != null)
                     {
-                        var _PART = REG.storageLines[0].slots[SLOT_INDEX];
-//                Debug.Log("Checking part: " + _PART.partConfig.name);
+                        var _PART = REG.storageLines[0].slots[_slotIndex];
+                        //                Debug.Log("Checking part: " + _PART.partConfig.name);
                         if (_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
                         {
-//                    Debug.Log("not chassis found: " + _PART.partConfig.name);
+                            //                    Debug.Log("not chassis found: " + _PART.partConfig.name);
                             if (_TASK_PARTS.Contains(_PART.partConfig))
                             {
-//                        Debug.Log("Part IS found in task list ("+ _PART.partConfig.name +")");
+                                //                        Debug.Log("Part IS found in task list ("+ _PART.partConfig.name +")");
                                 _viableParts.Add(_PART);
                             }
                         }
@@ -73,7 +76,6 @@ public class Workshop : MonoBehaviour
 
                 if (_viableParts.Count > 0)
                 {
-                    Debug.Log("Viable parts - " + _viableParts.Count);
                     List<VehiclePart> _attachedParts = new List<VehiclePart>();
                     foreach (VehiclePart _VIABLE_PART in _viableParts)
                     {
@@ -86,23 +88,25 @@ public class Workshop : MonoBehaviour
                         }
                     }
 
-                    foreach (VehiclePart _ATTACHED_PART in _attachedParts)
+                    // clean up slots of attached parts
+                    for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
                     {
-                        _viableParts.Remove(_ATTACHED_PART);
-                        REG.storageLines[0].slots.Remove(_ATTACHED_PART);
+                        if(_attachedParts.Contains(REG.storageLines[0].slots[_slotIndex])){
+                            REG.storageLines[0].slots[_slotIndex] = null;
+                            _viableParts.Remove(REG.storageLines[0].slots[_slotIndex]);
+                        }
                     }
 
                     foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
                     {
                         if (_CHASSIS.vehicleIsComplete)
                         {
-                            REG.storageLines[0].slots.Remove(_CHASSIS);
+                            int indexOfCompletedChassis = REG.storageLines[0].slots.IndexOf(_CHASSIS);
+                            REG.storageLines[0].slots[indexOfCompletedChassis] = null;
                             Destroy(_CHASSIS.gameObject);
                             Factory.INSTANCE.VehicleComplete(_CHASSIS);
                         }
                     }
-
-//                REG.RefactorStorage();
                 }
                 else
                 {
@@ -125,25 +129,7 @@ public class Workshop : MonoBehaviour
                     else
                     {
                         // no space available - get rid of everything except one viable chassis
-                        Debug.Log("NO ROOM IN REG - DITCH");
-                        List<VehiclePart> _PARTS_TO_DITCH = new List<VehiclePart>();
-                        bool firstChassisEncountered = true;
-                        for (int SLOT_INDEX = 0; SLOT_INDEX < REG.lineLength; SLOT_INDEX++)
-                        {
-                            VehiclePart _PART = REG.storageLines[0].slots[SLOT_INDEX];
-                            if (firstChassisEncountered && _VIABLE_CHASSIS.Contains(_PART as VehiclePart_CHASSIS))
-                            {
-                                firstChassisEncountered = false;
-                            }
-                            else
-                            {
-                                _PARTS_TO_DITCH.Add(_PART);
-                            }
-                        }
-
-                        REG.parts_OUT = _PARTS_TO_DITCH.ToArray();
-                        REG.sendingLineTo = L1;
-                        REG.ChangeState(StorageState.FETCHING);
+                        REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
                     }
                 }
 
@@ -181,23 +167,25 @@ public class Workshop : MonoBehaviour
                 L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG));
                 REG.ChangeState(StorageState.WAITING);
                 break;
-
-//                if (!_chassis.partsFitted.ContainsKey(_PAIR.Key))
-//                {
-//                    L1.RequestPart(new VehiclePartRequest(_PAIR.Key, REG, _PAIR.Value));
-//                    REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
-//                    break;
-//                }
-//                else if (_chassis.partsFitted[_PAIR.Key] < _PAIR.Value)
-//                {
-//                    L1.RequestPart(
-//                        new VehiclePartRequest(_PAIR.Key, REG, _PAIR.Value - _chassis.partsFitted[_PAIR.Key]));
-//                    REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
-//                    break;
-//                }
             }
         }
     }
+
+    public List<VehiclePart_CHASSIS> FindChassis_in_REG(int _chassisVersion,
+       Dictionary<VehiclePart_Config, int> _requiredParts)
+    {
+        List<VehiclePart_CHASSIS> _result = new List<VehiclePart_CHASSIS>();
+        // Iterate through LINES
+
+        for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
+        {
+            if(REG.IsChassisViable(0,_slotIndex,_chassisVersion, _requiredParts)){
+                _result.Add(REG.storageLines[0].slots[_slotIndex] as VehiclePart_CHASSIS);
+            }
+        }
+        return _result;
+    }
+
 }
 
 public class WorkshopTask
@@ -219,6 +207,6 @@ public class WorkshopTask
             }
         }
 
-        ratio_chassis_to_parts = 1 / (float) partCount;
+        ratio_chassis_to_parts = 1 / (float)partCount;
     }
 }

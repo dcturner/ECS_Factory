@@ -30,7 +30,7 @@ public class VehiclePart_CHASSIS : VehiclePart
     public bool AttachPart(VehiclePart_Config _part, GameObject _obj)
     {
         VehiclePart_Assignment _ASSIGNMENT = null;
-        Debug.Log("Trying to attach " + _part);
+        //Debug.Log("Trying to attach " + _part);
         foreach (VehiclePart_Assignment _PART_NEEDED in partsNeeded)
         {
             if (_PART_NEEDED.partConfig == _part)
@@ -56,7 +56,7 @@ public class VehiclePart_CHASSIS : VehiclePart
             {
                 partsFitted[_ASSIGNMENT.partConfig]++;
             }
-Debug.Log("PART FITTED");
+            Debug.Log("PART FITTED");
             return true;
         }
         else
