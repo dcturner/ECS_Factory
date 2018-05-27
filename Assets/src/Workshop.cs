@@ -141,9 +141,9 @@ public class Workshop : MonoBehaviour
                             }
                         }
 
-                        REG.pending_SEND = _PARTS_TO_DITCH.ToArray();
+                        REG.parts_OUT = _PARTS_TO_DITCH.ToArray();
                         REG.sendingLineTo = L1;
-                        REG.ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
+                        REG.ChangeState(StorageState.FETCHING);
                     }
                 }
 
@@ -179,7 +179,7 @@ public class Workshop : MonoBehaviour
                 }
 
                 L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG));
-                REG.ChangeState(StorageState.WAITING_FOR_DELIVERY);
+                REG.ChangeState(StorageState.WAITING);
                 break;
 
 //                if (!_chassis.partsFitted.ContainsKey(_PAIR.Key))

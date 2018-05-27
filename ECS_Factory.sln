@@ -1,13 +1,13 @@
-
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-firstpass", "Assembly-CSharp-firstpass.csproj", "{571DA1FE-46F3-B671-3DC7-383A0A953AB5}"
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio for Mac
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECS_Factory", "Assembly-CSharp-firstpass.csproj", "{571DA1FE-46F3-B671-3DC7-383A0A953AB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{827CCD74-9074-F765-64E0-A281A286EF22}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECS_Factory", "Assembly-CSharp.csproj", "{827CCD74-9074-F765-64E0-A281A286EF22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor-firstpass", "Assembly-CSharp-Editor-firstpass.csproj", "{05BA4556-31AC-9DCD-BD11-371562299468}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECS_Factory", "Assembly-CSharp-Editor-firstpass.csproj", "{05BA4556-31AC-9DCD-BD11-371562299468}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{1242B121-E63E-9844-0B2D-0051E463E086}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECS_Factory", "Assembly-CSharp-Editor.csproj", "{1242B121-E63E-9844-0B2D-0051E463E086}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,8 +34,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Assembly-CSharp.csproj
 	EndGlobalSection
 EndGlobal

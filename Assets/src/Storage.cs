@@ -11,6 +11,8 @@ using UnityEngine;
 
 public class Storage : MonoBehaviour
 {
+
+    #region < FIELDS
     public static bool GIZMOS_DRAW_CELLS = false;
 
     public string storageName;
@@ -21,15 +23,18 @@ public class Storage : MonoBehaviour
     [PropertyRange(1, 1000)] public int taskDuration;
 
     // Total number of clusters along XYZ
-    [TabGroup("Total")] [PropertyRange(1, 100)]
+    [TabGroup("Total")]
+    [PropertyRange(1, 100)]
     public int linesX, linesY, linesZ;
 
     // How many cells make up a cluster?  XYZ
-    [TabGroup("GroupBy")] [PropertyRange(1, 100)]
+    [TabGroup("GroupBy")]
+    [PropertyRange(1, 100)]
     public int lineLength, lines_groupBy_Y, lines_groupBy_Z;
 
     // How much space goes between clusters? XYZ
-    [TabGroup("Gutters")] [PropertyRange(0, 10)]
+    [TabGroup("Gutters")]
+    [PropertyRange(0, 10)]
     public int gutterX, gutterY, gutterZ;
 
     private float width, height, depth;
@@ -40,12 +45,15 @@ public class Storage : MonoBehaviour
     [HideInInspector] public List<Vector3> aisleSpaces;
     [HideInInspector] public float factor;
     [HideInInspector] public List<StorageLine> storageLines;
-    [HideInEditorMode] public VehiclePart[] pending_STORE, pending_SEND;
-    [HideInEditorMode] public StorageLine pendingLineSend;
+    [HideInInspector] public VehiclePart[] parts_IN, parts_OUT;
+    [HideInInspector] public StorageLine pendingLineSend;
+    [HideInInspector] public VehiclePartRequest pending_PART_request;
+    [HideInInspector] public VehicleChassiRequest pending_CHASSIS_request;
 
     // Storage GRID layout
     private int cellsX, cellsY, cellsZ;
-
+    #endregion FIELDS >
+    #region < INIT
     public void Init()
     {
         DefineStorageLayout();
@@ -90,120 +98,55 @@ public class Storage : MonoBehaviour
     {
         storageLines.Add(new StorageLine(_index, lineLength, _pos));
     }
-
-
+    #endregion INIT >
+    #region < State / Update
     public void ChangeState(StorageState _newState)
     {
         if (currentState != _newState)
         {
             currentState = _newState;
-//            Debug.Log(ToString() + currentState);
+            //            Debug.Log(ToString() + currentState);
             switch (currentState)
             {
                 case StorageState.IDLE:
-                    if (pending_STORE != null)
+                    if (parts_IN != null)
                     {
-                        AttemptStore(pending_STORE);
+                        AttemptStore(parts_IN);
                     }
 
                     break;
-                case StorageState.WAITING_FOR_DELIVERY:
+                case StorageState.WAITING:
                     break;
-                case StorageState.FETCHING_REQUESTED_ITEMS:
+                case StorageState.FETCHING:
                     break;
             }
         }
     }
-
-    public void Force_QuickSave(VehiclePart[] _parts)
+    public void Tick()
     {
-        AttemptStore(_parts);
-    }
-
-    private void AttemptStore(VehiclePart[] _parts)
-    {
-        int partIndex = 0;
-        int lineIndex = 0;
-        while (partIndex < _parts.Length - 1 && lineIndex < storageLines.Count)
+        switch (currentState)
         {
-            StorageLine _LINE = storageLines[lineIndex];
-            for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
-            {
-                if (_LINE.slots[slotIndex] == null)
+            case StorageState.IDLE:
+                break;
+            case StorageState.WAITING:
+                break;
+            case StorageState.FETCHING:
+                if (taskStep == taskDuration)
                 {
-                    if (_parts[slotIndex] != null)
-                    {
-                        VehiclePart _PART = (_parts[partIndex].partConfig.partType == Vehicle_PartType.CHASSIS)
-                            ? _parts[partIndex] as VehiclePart_CHASSIS
-                            : _parts[partIndex];
-                        SetPartTransform(_PART.transform, lineIndex, slotIndex);
-                        FillSlot(lineIndex, slotIndex, _PART);
-                        partIndex++;
-                        if (partIndex == _parts.Length)
-                        {
-                            return;
-                        }
-                    }
+                    READY_TO_DISPATCH();
                 }
-            }
-
-            lineIndex++;
-        }
-    }
-
-    public void ClearSlot(int _lineIndex, int _slotIndex)
-    {
-        if (storageLines[_lineIndex].slots[_slotIndex] != null)
-        {
-            storageLines[_lineIndex].slots[_slotIndex] = null;
-            freeSpace++;
-            usedSpace--;
-        }
-    }
-
-    private void FillSlot(int _lineIndex, int _slotIndex, VehiclePart _part)
-    {
-        if (storageLines[_lineIndex].slots[_slotIndex] == null)
-        {
-            storageLines[_lineIndex].slots[_slotIndex] = _part;
-            freeSpace--;
-            usedSpace++;
-        }
-    }
-
-    private void SetPartTransform(Transform _partTransform, int _lineIndex, int _slotIndex)
-    {
-        _partTransform.position = storageLines[_lineIndex].slotPositions[_slotIndex];
-    }
-
-    public void RequestPart(VehiclePartRequest _request)
-    {
-        if (currentState == StorageState.IDLE)
-        {
-            sendingLineTo = _request.deliverTo;
-            foreach (StorageLine _LINE in storageLines)
-            {
-                VehiclePart[] _SLOTS = _LINE.slots.ToArray();
-                for (int i = 0; i < lineLength; i++)
+                else
                 {
-                    if (_SLOTS[i] != null)
-                    {
-                        if (_SLOTS[i].partConfig == _request.part)
-                        {
-                            pending_SEND = _LINE.slots.ToArray();
-                            pendingLineSend = _LINE;
-                            ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
-                            return;
-                        }
-                    }
+                    taskStep++;
                 }
-            }
 
-            ChangeState(StorageState.WAITING_FOR_DELIVERY);
-            getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
+                break;
         }
-    }
 
+        factor = (float)taskStep / (float)taskDuration;
+    }
+    #endregion State / Update >
+    #region < Send / Recieve
     // Check within CONTENTS for chassis that meet the required criteria (PART TYPE MISSING)
     // e.g. find chassis that still need wheels
     public void RequestChassis(VehicleChassiRequest _request)
@@ -215,8 +158,8 @@ public class Storage : MonoBehaviour
                 FindLineContainingChassis(_request.chassisVersion, _request.requiredParts);
             if (lineContainingChassis != -1)
             {
-                pending_SEND = storageLines[lineContainingChassis].slots.ToArray();
-                ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
+                parts_OUT = storageLines[lineContainingChassis].slots.ToArray();
+                ChangeState(StorageState.FETCHING);
             }
             else
             {
@@ -335,29 +278,9 @@ public class Storage : MonoBehaviour
 
         return _result;
     }
-
-    public void Tick()
+    public void Force_QuickSave(VehiclePart[] _parts)
     {
-        switch (currentState)
-        {
-            case StorageState.IDLE:
-                break;
-            case StorageState.WAITING_FOR_DELIVERY:
-                break;
-            case StorageState.FETCHING_REQUESTED_ITEMS:
-                if (taskStep == taskDuration)
-                {
-                    READY_TO_DISPATCH();
-                }
-                else
-                {
-                    taskStep++;
-                }
-
-                break;
-        }
-
-        factor = (float) taskStep / (float) taskDuration;
+        AttemptStore(_parts);
     }
 
     private void READY_TO_DISPATCH()
@@ -368,15 +291,14 @@ public class Storage : MonoBehaviour
         }
 
         storageLines.Remove(pendingLineSend);
-        sendingLineTo.RecieveParts(pending_SEND);
+        sendingLineTo.RecieveParts(parts_OUT);
         ChangeState(StorageState.IDLE);
     }
-
 
     public void RecieveParts(VehiclePart[] _parts)
     {
         //Debug.Log(storageName +  " receieved " + _parts.Length);
-        if (currentState == StorageState.IDLE || currentState == StorageState.WAITING_FOR_DELIVERY)
+        if (currentState == StorageState.IDLE || currentState == StorageState.WAITING)
         {
             if (freeSpace > 0)
             {
@@ -394,16 +316,143 @@ public class Storage : MonoBehaviour
                     ClearSlot(0, i);
                 }
 
-                pending_SEND = _PARTS_TO_SEND.ToArray();
+                parts_OUT = _PARTS_TO_SEND.ToArray();
                 sendingLineTo = getsPartsFrom;
-                ChangeState(StorageState.FETCHING_REQUESTED_ITEMS);
+                ChangeState(StorageState.FETCHING);
             }
         }
         else
         {
-            pending_STORE = _parts;
+            parts_IN = _parts;
         }
     }
+    #endregion Send / Recieve >
+    #region < Slot Management
+    private void AttemptStore(VehiclePart[] _parts)
+    {
+        int partIndex = 0;
+        int lineIndex = 0;
+        while (partIndex < _parts.Length - 1 && lineIndex < storageLines.Count)
+        {
+            StorageLine _LINE = storageLines[lineIndex];
+            for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
+            {
+                if (_LINE.slots[slotIndex] == null)
+                {
+                    if (_parts[slotIndex] != null)
+                    {
+                        VehiclePart _PART = (_parts[partIndex].partConfig.partType == Vehicle_PartType.CHASSIS)
+                            ? _parts[partIndex] as VehiclePart_CHASSIS
+                            : _parts[partIndex];
+                        SetPartTransform(_PART.transform, lineIndex, slotIndex);
+                        FillSlot(lineIndex, slotIndex, _PART);
+                        partIndex++;
+                        if (partIndex == _parts.Length)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            lineIndex++;
+        }
+    }
+    public void ClearSlot(int _lineIndex, int _slotIndex)
+    {
+        if (storageLines[_lineIndex].slots[_slotIndex] != null)
+        {
+            storageLines[_lineIndex].slots[_slotIndex] = null;
+            freeSpace++;
+            usedSpace--;
+        }
+    }
+
+    private void FillSlot(int _lineIndex, int _slotIndex, VehiclePart _part)
+    {
+        if (storageLines[_lineIndex].slots[_slotIndex] == null)
+        {
+            storageLines[_lineIndex].slots[_slotIndex] = _part;
+            freeSpace--;
+            usedSpace++;
+        }
+    }
+    #endregion Slot Management >
+
+    private void SetPartTransform(Transform _partTransform, int _lineIndex, int _slotIndex)
+    {
+        _partTransform.position = storageLines[_lineIndex].slotPositions[_slotIndex];
+    }
+
+    public void RequestPart(VehiclePartRequest _request)
+    {
+        if (currentState == StorageState.IDLE)
+        { // I am free to take orders
+
+            if (freeSpace >= lineLength)
+            { // do I have space for a new line?
+                BeginRequest(_request);
+            }
+            else
+            { // no room, DUMP a line
+                pending_PART_request = _request;
+                Dump_LINE();
+            }
+        }
+    }
+
+    // Send the first line you encounter with a matching part
+    private void BeginRequest(VehiclePartRequest _request)
+    {
+        pending_PART_request = null;
+        sendingLineTo = _request.deliverTo;
+        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+        {
+            StorageLine _LINE = storageLines[_lineIndex];
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                VehiclePart[] _SLOTS = _LINE.slots.ToArray();
+                if (_SLOTS[_slotIndex] != null)
+                {
+                    if (_SLOTS[_slotIndex].partConfig == _request.part)
+                    {
+                        parts_OUT = _LINE.slots.ToArray();
+                        pendingLineSend = _LINE;
+                        ChangeState(StorageState.FETCHING);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
+        ChangeState(StorageState.WAITING);
+        getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
+    }
+
+    public void Dump_LINE(int _lineIndex = 0)
+    {
+        Dump_SLOTS(lineLength, _lineIndex);
+    }
+    public void Dump_SLOTS(int _count, int _lineIndex = 0)
+    {
+
+        if (currentState == StorageState.IDLE)
+        {
+            ChangeState(StorageState.FETCHING);
+            List<VehiclePart> dumpList = new List<VehiclePart>();
+            StorageLine _LINE = storageLines[_lineIndex];
+            for (int _slotIndex = 0; _slotIndex < _count; _slotIndex++)
+            {
+                if (_LINE.slots[_slotIndex] != null)
+                {
+                    dumpList.Add(_LINE.slots[_slotIndex]);
+                    ClearSlot(_lineIndex, _slotIndex);
+                }
+            }
+        }
+    }
+
 
 
     private void OnDrawGizmos()
@@ -468,20 +517,20 @@ public class Storage : MonoBehaviour
             capacity = clusterCapacity * (linesX * linesY * linesZ);
         }
     }
-
     void Gizmos_DrawCell(Vector3 _cell_POS, Vector3 _cell_SIZE)
     {
-//        Gizmos.DrawCube(_cell_POS + _cell_SIZE * 0.5f, _cell_SIZE);
-//        Gizmos.DrawWireCube(_cell_POS, _cell_SIZE );
+        //        Gizmos.DrawCube(_cell_POS + _cell_SIZE * 0.5f, _cell_SIZE);
+        //        Gizmos.DrawWireCube(_cell_POS, _cell_SIZE );
         GizmoHelpers.DrawRect(colour, _cell_POS, _cell_SIZE.x, _cell_SIZE.y);
     }
+
 }
 
 public enum StorageState
 {
     IDLE,
-    WAITING_FOR_DELIVERY,
-    FETCHING_REQUESTED_ITEMS,
+    WAITING,
+    FETCHING
 }
 
 public class VehiclePartRequest
