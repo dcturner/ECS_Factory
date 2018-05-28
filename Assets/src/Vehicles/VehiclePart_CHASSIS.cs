@@ -56,11 +56,12 @@ public class VehiclePart_CHASSIS : VehiclePart
             {
                 partsFitted[_ASSIGNMENT.partConfig]++;
             }
-            Debug.Log("PART FITTED");
+            Debug.Log(_part.name + " FITTED  ("+partsFitted[_ASSIGNMENT.partConfig]+"/"+design.quantities[_ASSIGNMENT.partConfig]+") to " + name);
             return true;
         }
         else
         {
+            Debug.Log(_part.name + " NOT FITTED to " + name);
             return false;
         }
     }

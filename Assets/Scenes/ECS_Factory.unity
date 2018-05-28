@@ -205,7 +205,7 @@ MonoBehaviour:
   factoryMode: 0
   PartsDeliveredTo: {fileID: 398428904}
   tickRate: 0.027
-  storageCellSize: 0.35
+  storageCellSize: 0.45
   HD: {fileID: 398428904}
   RAM: {fileID: 268225004}
   L3: {fileID: 991516663}
@@ -548,8 +548,8 @@ MonoBehaviour:
   storageLocations: []
   aisleSpaces: []
   factor: 0
-  pending_STORE: []
-  pending_SEND: []
+  parts_IN: []
+  parts_OUT: []
 --- !u!4 &273678385 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4015091888012222, guid: 6c141f121dcd3422f81cb47d4144e0a9,
@@ -691,8 +691,8 @@ MonoBehaviour:
   storageLocations: []
   aisleSpaces: []
   factor: 0
-  pending_STORE: []
-  pending_SEND: []
+  parts_IN: []
+  parts_OUT: []
 --- !u!1 &991516661
 GameObject:
   m_ObjectHideFlags: 0
@@ -756,5 +756,5 @@ MonoBehaviour:
   storageLocations: []
   aisleSpaces: []
   factor: 0
-  pending_STORE: []
-  pending_SEND: []
+  parts_IN: []
+  parts_OUT: []

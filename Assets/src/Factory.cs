@@ -112,10 +112,17 @@ public class Factory : SerializedMonoBehaviour
                 if (_PART.partType == Vehicle_PartType.CHASSIS)
                 {
                     _LIST_CHASSIS.Add(_part_OBJ.GetComponent<VehiclePart_CHASSIS>());
+                    var _TEMP_CHASSIS = _LIST_CHASSIS.Last();
+                    _TEMP_CHASSIS.id = i;
+                    _TEMP_CHASSIS.name = _TEMP_CHASSIS.partConfig.partType + "_" + _TEMP_CHASSIS.id;
+
                 }
                 else
                 {
                     _LIST_PARTS.Add(_part_OBJ.GetComponent<VehiclePart>());
+                    var _TEMP_PART = _LIST_PARTS.Last();
+                    _TEMP_PART.id = i;
+                    _TEMP_PART.name = _TEMP_PART.partConfig.partType + "_" + _TEMP_PART.id;
                 }
             }
 

@@ -67,34 +67,39 @@ public class Workshop : MonoBehaviour
                             //                    Debug.Log("not chassis found: " + _PART.partConfig.name);
                             if (_TASK_PARTS.Contains(_PART.partConfig))
                             {
-                                //                        Debug.Log("Part IS found in task list ("+ _PART.partConfig.name +")");
-                                _viableParts.Add(_PART);
+                                foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
+                                {
+                                    if (!_CHASSIS.partsFitted.ContainsKey(_PART.partConfig))
+                                    {
+                                        _viableParts.Add(_PART);
+                                    }
+                                    else if (_CHASSIS.partsFitted[_PART.partConfig] < _CHASSIS.design.quantities[_PART.partConfig])
+                                    {
+                                        _viableParts.Add(_PART);
+                                    }
+                                }
                             }
                         }
                     }
                 }
-
+                Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
                 if (_viableParts.Count > 0)
                 {
-                    List<VehiclePart> _attachedParts = new List<VehiclePart>();
-                    foreach (VehiclePart _VIABLE_PART in _viableParts)
-                    {
-                        foreach (VehiclePart_CHASSIS _VC in _VIABLE_CHASSIS)
+                        for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
                         {
-                            if (_VC.AttachPart(_VIABLE_PART.partConfig, _VIABLE_PART.gameObject))
-                            {
-                                _attachedParts.Add(_VIABLE_PART);
+                            var _PART = REG.storageLines[0].slots[_slotIndex];
+                            if(_viableParts.Contains(_PART)){
+                                
+                                for (int _chassisIndex = 0; _chassisIndex < _VIABLE_CHASSIS.Count; _chassisIndex++)
+                                {
+                                    if(_VIABLE_CHASSIS[_chassisIndex].AttachPart(_PART.partConfig, _PART.gameObject)){
+                                        _viableParts.Remove(_PART);
+                                    REG.ClearSlot(0, _slotIndex);
+                                        break;
+                                    }
+                                }
                             }
-                        }
-                    }
 
-                    // clean up slots of attached parts
-                    for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
-                    {
-                        if(_attachedParts.Contains(REG.storageLines[0].slots[_slotIndex])){
-                            REG.storageLines[0].slots[_slotIndex] = null;
-                            _viableParts.Remove(REG.storageLines[0].slots[_slotIndex]);
-                        }
                     }
 
                     foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
@@ -102,7 +107,7 @@ public class Workshop : MonoBehaviour
                         if (_CHASSIS.vehicleIsComplete)
                         {
                             int indexOfCompletedChassis = REG.storageLines[0].slots.IndexOf(_CHASSIS);
-                            REG.storageLines[0].slots[indexOfCompletedChassis] = null;
+                            REG.ClearSlot(0, indexOfCompletedChassis);
                             Destroy(_CHASSIS.gameObject);
                             Factory.INSTANCE.VehicleComplete(_CHASSIS);
                         }
@@ -179,7 +184,8 @@ public class Workshop : MonoBehaviour
 
         for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
         {
-            if(REG.IsChassisViable(0,_slotIndex,_chassisVersion, _requiredParts)){
+            if (REG.IsChassisViable(0, _slotIndex, _chassisVersion, _requiredParts))
+            {
                 _result.Add(REG.storageLines[0].slots[_slotIndex] as VehiclePart_CHASSIS);
             }
         }
