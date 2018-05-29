@@ -1,17 +1,20 @@
 ﻿<Properties StartupConfiguration="{827CCD74-9074-F765-64E0-A281A286EF22}|">
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/src/Vehicles/VehiclePart.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Source Not Found">
     <Files>
-      <File FileName="Assets/src/Storage.cs" Line="318" Column="44" />
-      <File FileName="Assets/src/Workshop.cs" Line="16" Column="1" />
-      <File FileName="Assets/src/Vehicles/VehiclePart_CHASSIS.cs" Line="56" Column="14" />
-      <File FileName="Assets/src/Factory.cs" Line="125" Column="69" />
-      <File FileName="Assets/src/Vehicles/VehiclePart.cs" Line="6" Column="14" />
+      <File FileName="Assets/src/Storage.cs" Line="397" Column="22" />
+      <File FileName="Assets/src/Workshop.cs" Line="147" Column="31" />
+      <File FileName="Assets/src/Vehicles/VehiclePart_CHASSIS.cs" Line="50" Column="30" />
+      <File FileName="Assets/src/Factory.cs" Line="179" Column="20" />
+      <File FileName="Assets/src/Vehicles/VehiclePart.cs" Line="13" Column="27" />
+      <File FileName="Source Not Found" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Catchpoint exceptionName="System.Exception" includeSubclasses="True" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches>
     <Watch file="../../../Assets/src/Storage.cs" line="382" offsetX="764" offsetY="5715" expression="_parts[0]" liveUpdate="False" />

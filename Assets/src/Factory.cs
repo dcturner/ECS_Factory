@@ -217,7 +217,7 @@ public class Factory : SerializedMonoBehaviour
             if (!ordersStillPending)
             {
                 orderComplete = true;
-                Debug.Log("ORDER COMPLETE");
+                Debug.Log("ORDER COMPLETE in "+tick+" ticks");
             }
         }
     }

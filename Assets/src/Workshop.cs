@@ -82,7 +82,7 @@ public class Workshop : MonoBehaviour
                         }
                     }
                 }
-                //Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
+                Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
                 if (_viableParts.Count > 0)
                 {
                     for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
@@ -123,6 +123,7 @@ public class Workshop : MonoBehaviour
                         {
                             if (REG.currentState == StorageState.IDLE)
                             {
+                                Debug.Log("W_" + workshopIndex + " partREQ");
                                 RequestViableParts(_CHASSIS);
                             }
                             else
@@ -141,7 +142,6 @@ public class Workshop : MonoBehaviour
             else
             {
                 // no viable CHASSIS - request some
-                //Debug.Log("REG needs chassis");
                 REG.waitingForPartType = requiredChassis.partConfig;
                 L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
                 requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
@@ -155,18 +155,9 @@ public class Workshop : MonoBehaviour
         {
             if (_PAIR.Key.partType != Vehicle_PartType.CHASSIS)
             {
-                int partsToRequest = 0;
-                VehiclePart_Config _CONFIG = _chassis.partsNeeded[0].partConfig;
-                foreach (VehiclePart_Assignment _PART in _chassis.partsNeeded)
-                {
-                    if (_PART.partConfig == _CONFIG)
-                    {
-                        partsToRequest++;
-                    }
-                }
-
                 L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG));
                 REG.waitingForPartType = _chassis.partsNeeded[0].partConfig;
+                Debug.Log("W_" + workshopIndex + " needs " + _chassis.partsNeeded[0].partConfig);
                 REG.ChangeState(StorageState.WAITING);
                 break;
             }

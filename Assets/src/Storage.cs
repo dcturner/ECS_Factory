@@ -19,6 +19,7 @@ public class Storage : MonoBehaviour
     public Storage getsPartsFrom;
     public Storage sendingLineTo;
     public Color colour;
+    public bool isLastInChain = false;
 
     [PropertyRange(1, 1000)] public int taskDuration;
 
@@ -47,8 +48,8 @@ public class Storage : MonoBehaviour
     [HideInInspector] public List<StorageLine> storageLines;
     [HideInInspector] public VehiclePart[] parts_IN, parts_OUT;
     [HideInInspector] public StorageLine pendingLineSend;
-    [HideInInspector] public VehiclePartRequest pending_PART_request;
-    [HideInInspector] public VehicleChassiRequest pending_CHASSIS_request;
+    [HideInInspector] public VehiclePartRequest current_PART_request, next_PART_request;
+    [HideInInspector] public VehicleChassiRequest current_CHASSIS_request, next_CHASSIS_request;
     [HideInInspector] public VehiclePart_Config waitingForPartType;
 
     // Storage GRID layout
@@ -111,13 +112,29 @@ public class Storage : MonoBehaviour
             {
                 case StorageState.IDLE:
                     // grab chassis / part if a request is pending
-                    if (pending_CHASSIS_request != null)
-                    {
-                        RequestChassis(pending_CHASSIS_request);
+                    if(current_CHASSIS_request != null){
+                        //Debug.Log(storageName +  " found current CHASSIS req");
+                        RequestChassis(current_CHASSIS_request);
                     }
-                    else if (pending_PART_request != null)
+                    else if(current_PART_request != null){
+                        //Debug.Log(storageName + " found current PART req");
+                        RequestPart(current_PART_request);
+                    }
+                    else if (next_CHASSIS_request != null)
                     {
-                        RequestPart(pending_PART_request);
+                        Debug.Log(storageName + " found NEXT CHASSIS req");
+                        current_CHASSIS_request = next_CHASSIS_request;
+                        next_CHASSIS_request = null;
+                        RequestChassis(current_CHASSIS_request);
+                    }
+                    else if (next_PART_request != null)
+                    {
+                        Debug.Log(storageName + " found NEXT PART req");
+                        current_PART_request = next_PART_request;
+                        next_PART_request = null;
+                        RequestPart(current_PART_request);
+
+
                     }
 
                     break;
@@ -159,36 +176,41 @@ public class Storage : MonoBehaviour
     public void RequestPart(VehiclePartRequest _request)
     {
         if (currentState == StorageState.IDLE)
-
         { // I am free to take orders
+            Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
             waitingForPartType = _request.part;
             sendingLineTo = _request.deliverTo;
-            if (freeSpace >= lineLength)
+            current_PART_request = null;
+            if (freeSpace > 0)
             { // do I have space for a new line?
                 Attempt_PART_request(_request);
             }
             else
             { // no room, DUMP a line
-                pending_PART_request = _request;
-                pending_CHASSIS_request = null;
+                current_PART_request = _request;
                 Dump_LINE();
             }
+        }else{
+            next_PART_request = _request;
         }
     }
     public void RequestChassis(VehicleChassiRequest _request)
     {
 
         if (currentState == StorageState.IDLE)
-            waitingForPartType = _request.part;
-        sendingLineTo = _request.deliverTo;
+            
         { // I am free to take orders
-            if (freeSpace >= lineLength)
+            Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
+            waitingForPartType = _request.part;
+            sendingLineTo = _request.deliverTo;
+            current_CHASSIS_request = null;
+            if (freeSpace > 0)
             { // do I have space for a new line?
                 Attempt_CHASSIS_request(_request);
             }
             else
             { // no room, DUMP a line
-                pending_CHASSIS_request = _request;
+                current_CHASSIS_request = _request;
                 Dump_LINE();
             }
         }
@@ -198,6 +220,7 @@ public class Storage : MonoBehaviour
     private void Attempt_PART_request(VehiclePartRequest _request)
     {
         sendingLineTo = _request.deliverTo;
+        current_PART_request = _request;
         for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
         {
             StorageLine _LINE = storageLines[_lineIndex];
@@ -216,18 +239,22 @@ public class Storage : MonoBehaviour
             }
         }
 
-        // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
-        ChangeState(StorageState.WAITING);
+        if (!isLastInChain)
+        {
+            // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
+            ChangeState(StorageState.WAITING);
 
-        pending_PART_request = _request;
-        getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
+
+            getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
+        }else{
+            CancelOrder();
+        }
     }
 
     private void Attempt_CHASSIS_request(VehicleChassiRequest _request)
     {
-        pending_CHASSIS_request = null;
         sendingLineTo = _request.deliverTo;
-
+        current_CHASSIS_request = _request;
         // for StorageLines
         for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
         {
@@ -242,11 +269,17 @@ public class Storage : MonoBehaviour
             }
         }
 
-        // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
-        ChangeState(StorageState.WAITING);
+        if (!isLastInChain)
+        {
+            // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
+            ChangeState(StorageState.WAITING);
 
-        pending_CHASSIS_request = _request;
-        getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
+
+            getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
+        }else
+        {
+            CancelOrder();
+        }
     }
 
     private void Set_parts_OUT(int _lineIndex)
@@ -319,6 +352,7 @@ public class Storage : MonoBehaviour
     {
         if (_parts.Length > 0)
         {
+            //Debug.Log(storageName + " recieved: " + _parts.Length);
             List<VehiclePart> stored = _parts.ToList();
             if (currentState == StorageState.IDLE || currentState == StorageState.WAITING)
             {
@@ -335,8 +369,11 @@ public class Storage : MonoBehaviour
                             }
                         }
                     }
-                    stored = AttemptStore(stored.ToArray()).ToList();
-                    ChangeState(StorageState.IDLE);
+                    if (stored.Count > 0)
+                    {
+                        stored = AttemptStore(stored.ToArray()).ToList();
+                        ChangeState(StorageState.IDLE);
+                    }
                 }
                 else
                 {
@@ -362,6 +399,7 @@ public class Storage : MonoBehaviour
     {
         if (parts_OUT.Length > 0)
         {
+            Debug.Log(storageName +  " sending " + parts_OUT.Length);
             List<VehiclePart> _SENT_PARTS = sendingLineTo.RecieveParts(parts_OUT);
             for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
             {
@@ -377,8 +415,8 @@ public class Storage : MonoBehaviour
         }
         if (!_dumpingParts)
         {
-            pending_PART_request = null;
-            pending_CHASSIS_request = null;
+            current_PART_request = null;
+            current_CHASSIS_request = null;
         }
         ChangeState(StorageState.IDLE);
     }
@@ -513,6 +551,21 @@ public class Storage : MonoBehaviour
             sendingLineTo = getsPartsFrom;
             parts_OUT = dumpList.ToArray();
         }
+    }
+
+    public void CancelOrder(){
+
+        //Debug.Log(storageName + " CANCEL");
+        //    current_PART_request = null;
+        //    current_CHASSIS_request = null;
+        //next_PART_request = null;
+        //next_CHASSIS_request = null;
+        //ChangeState(StorageState.IDLE);
+        //if (sendingLineTo !=null)
+        //{
+        //    sendingLineTo.CancelOrder();
+        //}
+
     }
 
     private void OnDrawGizmos()
