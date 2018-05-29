@@ -10,6 +10,7 @@ public class VehiclePart : MonoBehaviour
 
 	public int age;
 	public int id;
+    public int temp_score;
 }
 
 

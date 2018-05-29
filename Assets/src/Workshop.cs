@@ -82,24 +82,25 @@ public class Workshop : MonoBehaviour
                         }
                     }
                 }
-                Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
+                //Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
                 if (_viableParts.Count > 0)
                 {
-                        for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
+                    for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
+                    {
+                        var _PART = REG.storageLines[0].slots[_slotIndex];
+                        if (_viableParts.Contains(_PART))
                         {
-                            var _PART = REG.storageLines[0].slots[_slotIndex];
-                            if(_viableParts.Contains(_PART)){
-                                
-                                for (int _chassisIndex = 0; _chassisIndex < _VIABLE_CHASSIS.Count; _chassisIndex++)
+
+                            for (int _chassisIndex = 0; _chassisIndex < _VIABLE_CHASSIS.Count; _chassisIndex++)
+                            {
+                                if (_VIABLE_CHASSIS[_chassisIndex].AttachPart(_PART.partConfig, _PART.gameObject))
                                 {
-                                    if(_VIABLE_CHASSIS[_chassisIndex].AttachPart(_PART.partConfig, _PART.gameObject)){
-                                        _viableParts.Remove(_PART);
+                                    _viableParts.Remove(_PART);
                                     REG.ClearSlot(0, _slotIndex);
-                                        break;
-                                    }
+                                    break;
                                 }
                             }
-
+                        }
                     }
 
                     foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
@@ -118,7 +119,6 @@ public class Workshop : MonoBehaviour
                     // no action can be undertaken - do we have room to load a chassis?
                     if (REG.freeSpace > 0)
                     {
-                        Debug.Log("space available in REG");
                         foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
                         {
                             if (REG.currentState == StorageState.IDLE)
@@ -137,18 +137,14 @@ public class Workshop : MonoBehaviour
                         REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
                     }
                 }
-
-                // Can I perform the assigned task?
-                // do I have any required parts AND a suitable chassis? - if so, DO IT
-
-                // if not, order the parts for the task
             }
             else
             {
                 // no viable CHASSIS - request some
                 //Debug.Log("REG needs chassis");
+                REG.waitingForPartType = requiredChassis.partConfig;
                 L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
-                    requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
+                requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
             }
         }
     }
@@ -170,6 +166,7 @@ public class Workshop : MonoBehaviour
                 }
 
                 L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG));
+                REG.waitingForPartType = _chassis.partsNeeded[0].partConfig;
                 REG.ChangeState(StorageState.WAITING);
                 break;
             }

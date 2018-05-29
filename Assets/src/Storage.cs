@@ -49,6 +49,7 @@ public class Storage : MonoBehaviour
     [HideInInspector] public StorageLine pendingLineSend;
     [HideInInspector] public VehiclePartRequest pending_PART_request;
     [HideInInspector] public VehicleChassiRequest pending_CHASSIS_request;
+    [HideInInspector] public VehiclePart_Config waitingForPartType;
 
     // Storage GRID layout
     private int cellsX, cellsY, cellsZ;
@@ -109,11 +110,6 @@ public class Storage : MonoBehaviour
             switch (currentState)
             {
                 case StorageState.IDLE:
-                    if (parts_IN != null)
-                    {
-                        AttemptStore(parts_IN);
-                    }
-
                     // grab chassis / part if a request is pending
                     if (pending_CHASSIS_request != null)
                     {
@@ -140,10 +136,10 @@ public class Storage : MonoBehaviour
                 break;
             case StorageState.WAITING:
                 break;
-            case StorageState.FETCHING:
+            default:
                 if (taskStep == taskDuration)
                 {
-                    READY_TO_DISPATCH();
+                    SEND_PARTS(currentState == StorageState.DUMP);
                 }
                 else
                 {
@@ -165,6 +161,8 @@ public class Storage : MonoBehaviour
         if (currentState == StorageState.IDLE)
 
         { // I am free to take orders
+            waitingForPartType = _request.part;
+            sendingLineTo = _request.deliverTo;
             if (freeSpace >= lineLength)
             { // do I have space for a new line?
                 Attempt_PART_request(_request);
@@ -181,6 +179,8 @@ public class Storage : MonoBehaviour
     {
 
         if (currentState == StorageState.IDLE)
+            waitingForPartType = _request.part;
+        sendingLineTo = _request.deliverTo;
         { // I am free to take orders
             if (freeSpace >= lineLength)
             { // do I have space for a new line?
@@ -189,7 +189,6 @@ public class Storage : MonoBehaviour
             else
             { // no room, DUMP a line
                 pending_CHASSIS_request = _request;
-                pending_PART_request = null;
                 Dump_LINE();
             }
         }
@@ -198,7 +197,6 @@ public class Storage : MonoBehaviour
     // ATTEMPT TO EXECUTE REQUESTS
     private void Attempt_PART_request(VehiclePartRequest _request)
     {
-        pending_PART_request = null;
         sendingLineTo = _request.deliverTo;
         for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
         {
@@ -220,6 +218,7 @@ public class Storage : MonoBehaviour
 
         // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
         ChangeState(StorageState.WAITING);
+
         pending_PART_request = _request;
         getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
     }
@@ -245,18 +244,23 @@ public class Storage : MonoBehaviour
 
         // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
         ChangeState(StorageState.WAITING);
+
         pending_CHASSIS_request = _request;
         getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
     }
 
-    private void Set_parts_OUT(int  _lineIndex){
-        parts_OUT = new VehiclePart[lineLength];
+    private void Set_parts_OUT(int _lineIndex)
+    {
+        List<VehiclePart> _partsToSend = new List<VehiclePart>();
         var _LINE = storageLines[_lineIndex];
         for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
         {
-            parts_OUT[_slotIndex] = _LINE.slots[_slotIndex];
-            ClearSlot(_lineIndex, _slotIndex);
+            if (_LINE.slots[_slotIndex] != null)
+            {
+                _partsToSend.Add(_LINE.slots[_slotIndex]);
+            }
         }
+        parts_OUT = _partsToSend.ToArray();
     }
 
     public bool IsChassisViable(int _lineIndex, int _slotIndex, int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
@@ -311,70 +315,109 @@ public class Storage : MonoBehaviour
 
 
 
-    public void RecieveParts(VehiclePart[] _parts)
+    public List<VehiclePart> RecieveParts(VehiclePart[] _parts)
     {
-        Debug.Log(storageName + " receieved " + _parts.Length);
-        if (currentState == StorageState.IDLE || currentState == StorageState.WAITING)
+        if (_parts.Length > 0)
         {
-            if (freeSpace > 0)
+            List<VehiclePart> stored = _parts.ToList();
+            if (currentState == StorageState.IDLE || currentState == StorageState.WAITING)
             {
-                // we have some room, try to store
-                AttemptStore(_parts);
-                ChangeState(StorageState.IDLE);
+                if (freeSpace > 0)
+                {
+                    if (freeSpace < lineLength)
+                    {
+                        // not enough room for everyone - check part viability
+                        for (int _partIndex = 0; _partIndex < _parts.Length; _partIndex++)
+                        {
+                            if (_parts[_partIndex].partConfig != waitingForPartType)
+                            {
+                                stored.Remove(_parts[_partIndex]);
+                            }
+                        }
+                    }
+                    stored = AttemptStore(stored.ToArray()).ToList();
+                    ChangeState(StorageState.IDLE);
+                }
+                else
+                {
+                    // no room available - ditch line zero
+                    Set_parts_OUT(0);
+
+                    sendingLineTo = getsPartsFrom;
+                    ChangeState(StorageState.FETCHING);
+                }
+                return stored;
             }
             else
             {
-                // no room available - ditch line zero
-                Set_parts_OUT(0);
-
-                sendingLineTo = getsPartsFrom;
-                ChangeState(StorageState.FETCHING);
+                parts_IN = _parts;
+                return null;
             }
+
         }
-        else
-        {
-            parts_IN = _parts;
-        }
+        return null;
     }
 
-    private void READY_TO_DISPATCH()
+    private void SEND_PARTS(bool _dumpingParts)
     {
         if (parts_OUT.Length > 0)
         {
-            Debug.Log(storageName + " sending to " + sendingLineTo.storageName);
-            sendingLineTo.RecieveParts(parts_OUT);
+            List<VehiclePart> _SENT_PARTS = sendingLineTo.RecieveParts(parts_OUT);
+            for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+            {
+                for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+                {
+                    if (_SENT_PARTS.Contains(storageLines[_lineIndex].slots[_slotIndex]))
+                    {
+                        _SENT_PARTS.Remove(storageLines[_lineIndex].slots[_slotIndex]);
+                        ClearSlot(_lineIndex, _slotIndex);
+                    }
+                }
+            }
+        }
+        if (!_dumpingParts)
+        {
+            pending_PART_request = null;
+            pending_CHASSIS_request = null;
         }
         ChangeState(StorageState.IDLE);
     }
     #endregion Send / Recieve >
     #region < Slot Management
-    private void AttemptStore(VehiclePart[] _parts)
+    private VehiclePart[] AttemptStore(VehiclePart[] _parts)
     {
-        int _partIndex = 0;
-        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+        if (_parts.Length > 0)
         {
-            StorageLine _LINE = storageLines[_lineIndex];
-
-            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            List<VehiclePart> _STORED_PARTS = new List<VehiclePart>();
+            int _partIndex = 0;
+            for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
             {
-                if (_LINE.slots[_slotIndex] == null)
+                StorageLine _LINE = storageLines[_lineIndex];
+
+                for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
                 {
-                    Debug.Log("partIndex: " + _partIndex + " of " + _parts.Length);
-                    FillSlot(_lineIndex, _slotIndex, _parts[_partIndex]);
-                    SetPartTransform(_parts[_partIndex].transform, _lineIndex, _slotIndex);
-                    _partIndex++;
-
-
+                    if (_LINE.slots[_slotIndex] == null && _parts[_partIndex] != null)
+                    {
+                        FillSlot(_lineIndex, _slotIndex, _parts[_partIndex]);
+                        _STORED_PARTS.Add(_parts[_partIndex]);
+                        SetPartTransform(_parts[_partIndex].transform, _lineIndex, _slotIndex);
+                        _partIndex++;
+                    }
+                    if (_partIndex >= _parts.Length)
+                    {
+                        break;
+                    }
                 }
                 if (_partIndex >= _parts.Length)
                 {
-                    return;
+                    break;
                 }
             }
-            if (_partIndex >= _parts.Length)
-            {
-                return;
-            }
+            return _STORED_PARTS.ToArray();
+        }
+        else
+        {
+            return null;
         }
     }
     public void Force_QuickSave(VehiclePart[] _parts)
@@ -386,19 +429,22 @@ public class Storage : MonoBehaviour
     {
         if (storageLines[_lineIndex].slots[_slotIndex] != null)
         {
-            storageLines[_lineIndex].slots[_slotIndex] = null;
             freeSpace++;
             usedSpace--;
         }
+        storageLines[_lineIndex].slots[_slotIndex] = null;
     }
 
     private void FillSlot(int _lineIndex, int _slotIndex, VehiclePart _part)
     {
-        if (storageLines[_lineIndex].slots[_slotIndex] == null)
+        if (_part != null)
         {
-            storageLines[_lineIndex].slots[_slotIndex] = _part;
-            freeSpace--;
-            usedSpace++;
+            if (storageLines[_lineIndex].slots[_slotIndex] == null)
+            {
+                storageLines[_lineIndex].slots[_slotIndex] = _part;
+                freeSpace--;
+                usedSpace++;
+            }
         }
     }
     #endregion Slot Management >
@@ -418,7 +464,7 @@ public class Storage : MonoBehaviour
         if (currentState == StorageState.IDLE)
         {
             Debug.Log(storageName + " DUMP");
-            ChangeState(StorageState.FETCHING);
+            ChangeState(StorageState.DUMP);
             List<VehiclePart> dumpList = new List<VehiclePart>();
             StorageLine _LINE = storageLines[_lineIndex];
             for (int _slotIndex = 0; _slotIndex < _count; _slotIndex++)
@@ -426,13 +472,11 @@ public class Storage : MonoBehaviour
                 if (_LINE.slots[_slotIndex] != null)
                 {
                     dumpList.Add(_LINE.slots[_slotIndex]);
-                    ClearSlot(_lineIndex, _slotIndex);
                 }
             }
             sendingLineTo = getsPartsFrom;
             parts_OUT = dumpList.ToArray();
         }
-
     }
 
     public void DUMP_fromLine_exceptType(int _lineIndex, Vehicle_PartType _keepThisPart, int _maxKept)
@@ -440,7 +484,7 @@ public class Storage : MonoBehaviour
         if (currentState == StorageState.IDLE)
         {
             int partsKept = 0;
-            ChangeState(StorageState.FETCHING);
+            ChangeState(StorageState.DUMP);
             List<VehiclePart> dumpList = new List<VehiclePart>();
             StorageLine _LINE = storageLines[_lineIndex];
             for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
@@ -452,7 +496,6 @@ public class Storage : MonoBehaviour
                     if (_PART.partConfig.partType != _keepThisPart)
                     {
                         dumpList.Add(_PART);
-                        ClearSlot(_lineIndex, _slotIndex);
                     }
                     else
                     {
@@ -463,7 +506,6 @@ public class Storage : MonoBehaviour
                         else
                         {
                             dumpList.Add(_PART);
-                            ClearSlot(_lineIndex, _slotIndex);
                         }
                     }
                 }
@@ -548,7 +590,8 @@ public enum StorageState
 {
     IDLE,
     WAITING,
-    FETCHING
+    FETCHING,
+    DUMP
 }
 
 public class VehiclePartRequest
