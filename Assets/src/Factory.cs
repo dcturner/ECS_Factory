@@ -115,7 +115,6 @@ public class Factory : SerializedMonoBehaviour
                     var _TEMP_CHASSIS = _LIST_CHASSIS.Last();
                     _TEMP_CHASSIS.id = i;
                     _TEMP_CHASSIS.name = _TEMP_CHASSIS.partConfig.partType + "_" + _TEMP_CHASSIS.id;
-
                 }
                 else
                 {
@@ -219,12 +218,15 @@ public class Factory : SerializedMonoBehaviour
                 orderComplete = true;
                 Debug.Log("ORDER COMPLETE in " + tick + " ticks");
             }else{
-                Debug.Log("NEXT WORKSHOP TASK");
-                workshopTasks.Remove(workshopTasks[0]);
-                foreach (var _WORKSHOP in workshops)
+                if (factoryMode == FactoryMode.OOP)
                 {
-                    _WORKSHOP.currentTask = workshopTasks[0];
-                    _WORKSHOP.purgingPartsToSharedStorage = false;
+                    workshopTasks.Remove(workshopTasks[0]);
+                    Debug.Log("Next workshop task: " + workshopTasks[0].design.designName);
+                    foreach (var _WORKSHOP in workshops)
+                    {
+                        _WORKSHOP.currentTask = workshopTasks[0];
+                        _WORKSHOP.purgingPartsToSharedStorage = false;
+                    }
                 }
             }
         }

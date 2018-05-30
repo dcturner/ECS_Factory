@@ -12,7 +12,7 @@ public class Workshop : MonoBehaviour
     public int workshopIndex;
     public float width, height;
     public Storage L2, L1, REG;
-    public int freeSpace, usedSpace;
+    public int freeSpace, usedSpace, completedVehicles;
 
     private Queue<WorkshopTask> tasklist;
     public WorkshopTask currentTask = null;
@@ -22,6 +22,7 @@ public class Workshop : MonoBehaviour
 
     private void Awake()
     {
+        completedVehicles = 0;
         tasklist = new Queue<WorkshopTask>();
         workshop_viableChassis = new List<VehiclePart_CHASSIS>();
     }
@@ -128,8 +129,10 @@ public class Workshop : MonoBehaviour
                         {
                             int indexOfCompletedChassis = REG.storageLines[0].slots.IndexOf(_CHASSIS);
                             REG.ClearSlot(0, indexOfCompletedChassis);
-                            Destroy(_CHASSIS.gameObject);
                             Factory.INSTANCE.VehicleComplete(_CHASSIS);
+                            completedVehicles++;
+
+                            _CHASSIS.transform.position = transform.position + new Vector3(completedVehicles % 10, 0f, -1 - Mathf.FloorToInt(completedVehicles / 10));
                         }
                     }
                 }
