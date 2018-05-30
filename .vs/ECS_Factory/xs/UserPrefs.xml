@@ -2,10 +2,10 @@
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/src/Storage.cs">
     <Files>
-      <File FileName="Assets/src/Storage.cs" Line="647" Column="9" />
-      <File FileName="Assets/src/Workshop.cs" Line="152" Column="17" />
+      <File FileName="Assets/src/Storage.cs" Line="425" Column="42" />
+      <File FileName="Assets/src/Workshop.cs" Line="176" Column="36" />
       <File FileName="Assets/src/Vehicles/VehiclePart_CHASSIS.cs" Line="50" Column="30" />
-      <File FileName="Assets/src/Factory.cs" Line="212" Column="47" />
+      <File FileName="Assets/src/Factory.cs" Line="240" Column="14" />
       <File FileName="Assets/src/Vehicles/VehiclePart.cs" Line="13" Column="27" />
     </Files>
   </MonoDevelop.Ide.Workbench>

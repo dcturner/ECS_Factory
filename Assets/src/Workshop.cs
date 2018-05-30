@@ -12,6 +12,7 @@ public class Workshop : MonoBehaviour
     public int workshopIndex;
     public float width, height;
     public Storage L2, L1, REG;
+    public int freeSpace, usedSpace;
 
     private Queue<WorkshopTask> tasklist;
     public WorkshopTask currentTask = null;
@@ -37,6 +38,9 @@ public class Workshop : MonoBehaviour
     {
         if (currentTask != null)
         {
+
+            freeSpace = REG.freeSpace + L1.freeSpace + L2.freeSpace;
+            usedSpace = REG.usedSpace + L1.usedSpace + L2.usedSpace;
             PerformTask();
         }
     }
@@ -44,7 +48,8 @@ public class Workshop : MonoBehaviour
     // Perform the task as many times as possible
     void PerformTask()
     {
-        if(purgingPartsToSharedStorage){
+        if (purgingPartsToSharedStorage)
+        {
             DoPurge();
             return;
         }
@@ -96,7 +101,7 @@ public class Workshop : MonoBehaviour
                         }
                     }
                 }
-                Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
+                //Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
                 if (_viableParts.Count > 0)
                 {
                     for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
@@ -137,7 +142,7 @@ public class Workshop : MonoBehaviour
                         {
                             if (REG.currentState == StorageState.IDLE)
                             {
-                                Debug.Log("W_" + workshopIndex + " partREQ");
+                                //Debug.Log("W_" + workshopIndex + " partREQ");
                                 RequestViableParts(_CHASSIS);
                             }
                             else
@@ -164,13 +169,17 @@ public class Workshop : MonoBehaviour
                 workShopHasChassis = (hasChassis_L1 || hasChassis_L2);
 
                 REG.waitingForPartType = requiredChassis.partConfig;
+                REG.ChangeState(StorageState.WAITING);
                 L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
                 requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
             }
-        }else if(L2.currentState == StorageState.WAITING && Factory.INSTANCE.L3.currentState == StorageState.IDLE){
-            
-            if(L2.current_PART_request !=null){
-                Debug.Log(workshopIndex + "_L2 was waiting for L3 - new req sent");
+        }
+        else if (L2.currentState == StorageState.WAITING && Factory.INSTANCE.L3.currentState == StorageState.IDLE)
+        {
+
+            if (L2.current_PART_request != null)
+            {
+                //Debug.Log(workshopIndex + "_L2 was waiting for L3 - new req sent");
                 Factory.INSTANCE.L3.ClearRequests();
                 Factory.INSTANCE.RAM.ClearRequests();
                 Factory.INSTANCE.HD.ClearRequests();
@@ -185,16 +194,21 @@ public class Workshop : MonoBehaviour
         {
             if (_PAIR.Key.partType != Vehicle_PartType.CHASSIS)
             {
+
                 L1.RequestPart(new VehiclePartRequest(_chassis.partsNeeded[0].partConfig, REG));
                 REG.waitingForPartType = _chassis.partsNeeded[0].partConfig;
-                Debug.Log("W_" + workshopIndex + " needs " + _chassis.partsNeeded[0].partConfig);
-                REG.ChangeState(StorageState.WAITING);
-                break;
+                if (!purgingPartsToSharedStorage)
+                {
+                    REG.ChangeState(StorageState.WAITING);
+                }
+                return;
+
             }
         }
     }
 
-    public List<VehiclePart_CHASSIS> FindChassis_in_storage(Storage _storage, int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts){
+    public List<VehiclePart_CHASSIS> FindChassis_in_storage(Storage _storage, int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
+    {
         List<VehiclePart_CHASSIS> _result = new List<VehiclePart_CHASSIS>();
         // Iterate through LINES
 
@@ -208,25 +222,61 @@ public class Workshop : MonoBehaviour
         return _result;
     }
 
-    public void PurgePartsToSharedStorage(){
+    public void PurgePartsToSharedStorage()
+    {
+        purgingPartsToSharedStorage = true;
         Debug.Log("PURGE WORKSHOP: " + workshopIndex);
         Factory.INSTANCE.L3.AWAIT_PURGED_DATA();
         L2.AWAIT_PURGED_DATA();
         L1.AWAIT_PURGED_DATA();
-        purgingPartsToSharedStorage = true;
+        REG.AWAIT_PURGED_DATA();
+
+    }
+    public void CancelPurge()
+    {
+        purgingPartsToSharedStorage = false;
+        Debug.Log("CANCEL PURGE: " + workshopIndex);
+        Factory.INSTANCE.L3.ChangeState(StorageState.IDLE);
+        L2.ChangeState(StorageState.IDLE);
+        L1.ChangeState(StorageState.IDLE);
+        REG.ChangeState(StorageState.IDLE);
+
+    }
+    public void ClearRequestsAndIdle(){
+        L2.ClearRequests();
+        L1.ClearRequests();
+        REG.ClearRequests();
+
+        REG.ChangeState(StorageState.IDLE);
+        L1.ChangeState(StorageState.IDLE);
+        L2.ChangeState(StorageState.IDLE);
     }
 
-    public void DoPurge(){
+    public void DoPurge()
+    {
 
-        if(REG.usedSpace>0){
+        if (REG.usedSpace > 0)
+        {
             REG.Dump_LINE();
-        }else if(L1.usedSpace > 0){
+        }
+        else if (L1.usedSpace > 0)
+        {
             Factory.INSTANCE.L3.AWAIT_PURGED_DATA();
             L1.Dump_earliestLineWithData();
 
-        }else if(L2.usedSpace > 0){
+        }
+        else if (L2.usedSpace > 0)
+        {
             Factory.INSTANCE.L3.AWAIT_PURGED_DATA();
             L2.Dump_earliestLineWithData();
+            if(L2.usedSpace == 0){
+                // purge complete
+                // reset all workshops - start searching fresh for parts
+                foreach (var _WORKSHOP in Factory.INSTANCE.workshops)
+                {
+                    _WORKSHOP.ClearRequestsAndIdle();
+                }
+            }
         }
     }
 }

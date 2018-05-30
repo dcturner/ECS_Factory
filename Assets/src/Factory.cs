@@ -18,13 +18,13 @@ public class Factory : SerializedMonoBehaviour
     public FactoryMode factoryMode;
     public Storage PartsDeliveredTo;
     private int tick = 0;
-    [PropertyRange(0.0000001f, 1f)] public float tickRate = 0.1f;
+    [PropertyRange(0.00000001f, 1f)] public float tickRate = 0.1f;
     [PropertyRange(0.05f, 1f)] public float storageCellSize;
     private float t;
 
     public Storage HD, RAM, L3;
     private Storage[] storage;
-    private List<Workshop> workshops;
+    [HideInInspector]public List<Workshop> workshops;
     private List<WorkshopTask> workshopTasks;
 
     private int storageCount;
@@ -42,14 +42,14 @@ public class Factory : SerializedMonoBehaviour
     {
         INSTANCE = this;
         t = tickRate;
-        
+
         // setup storage
         storage = FindObjectsOfType<Storage>();
         foreach (Storage _STORAGE in storage)
         {
             _STORAGE.Init();
         }
-        
+
         workshops = FindObjectsOfType<Workshop>().OrderBy(m => m.workshopIndex).ToList();
         storageCount = storage.Length;
         requiredParts = new Dictionary<VehiclePart_Config, int>();
@@ -108,7 +108,7 @@ public class Factory : SerializedMonoBehaviour
             for (int i = 0; i < _TOTAL; i++)
             {
                 GameObject _part_OBJ =
-                    (GameObject) Instantiate(_PART_PREFAB, Vector3.zero, Quaternion.identity);
+                    (GameObject)Instantiate(_PART_PREFAB, Vector3.zero, Quaternion.identity);
                 if (_PART.partType == Vehicle_PartType.CHASSIS)
                 {
                     _LIST_CHASSIS.Add(_part_OBJ.GetComponent<VehiclePart_CHASSIS>());
@@ -217,13 +217,22 @@ public class Factory : SerializedMonoBehaviour
             if (!ordersStillPending)
             {
                 orderComplete = true;
-                Debug.Log("ORDER COMPLETE in "+tick+" ticks");
+                Debug.Log("ORDER COMPLETE in " + tick + " ticks");
+            }else{
+                Debug.Log("NEXT WORKSHOP TASK");
+                workshopTasks.Remove(workshopTasks[0]);
+                foreach (var _WORKSHOP in workshops)
+                {
+                    _WORKSHOP.currentTask = workshopTasks[0];
+                    _WORKSHOP.purgingPartsToSharedStorage = false;
+                }
             }
         }
     }
 
-    public void ALERT_WorkshopPartUnavailable(){
-        Debug.Log("PART SHORTAGE");
+    public void ALERT_WorkshopPartUnavailable(VehiclePart_Config _part)
+    {
+        Debug.Log("PART SHORTAGE: " + _part);
         L3.ClearRequests();
         RAM.ClearRequests();
         HD.ClearRequests();
@@ -232,11 +241,21 @@ public class Factory : SerializedMonoBehaviour
         RAM.ChangeState(StorageState.IDLE);
         HD.ChangeState(StorageState.IDLE);
 
+        Workshop _purgeMe = null;
+        int _leastUsedSpace = 999999;
         foreach (Workshop _WORKSHOP in workshops)
         {
-            if(!_WORKSHOP.workShopHasChassis){
-                _WORKSHOP.PurgePartsToSharedStorage();
+            if (_WORKSHOP.usedSpace > 0 && _WORKSHOP.usedSpace< _leastUsedSpace)
+            {
+                _purgeMe = _WORKSHOP;
+                _leastUsedSpace = _WORKSHOP.usedSpace;
+                _WORKSHOP.ClearRequestsAndIdle();
             }
+        }
+
+        if (_purgeMe != null)
+        {
+            _purgeMe.PurgePartsToSharedStorage();
         }
     }
 

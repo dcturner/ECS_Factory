@@ -63,7 +63,7 @@ public class Storage : MonoBehaviour
 
     private string Log()
     {
-        return storageName + " \n(" + usedSpace + "/" + capacity + ") ";
+        return storageName + " \n(" + usedSpace + "/" + capacity + ")\n" + currentState;
     }
 
     private void DefineStorageLayout()
@@ -108,7 +108,7 @@ public class Storage : MonoBehaviour
         {
             taskStep = 0;
             currentState = _newState;
-            Debug.Log(storageName + ": " + currentState);
+            //Debug.Log(storageName + ": " + currentState);
             switch (currentState)
             {
                 case StorageState.IDLE:
@@ -125,14 +125,14 @@ public class Storage : MonoBehaviour
                     }
                     else if (next_CHASSIS_request != null)
                     {
-                        Debug.Log(storageName + " found NEXT CHASSIS req");
+                        //Debug.Log(storageName + " found NEXT CHASSIS req");
                         current_CHASSIS_request = next_CHASSIS_request;
                         next_CHASSIS_request = null;
                         RequestChassis(current_CHASSIS_request);
                     }
                     else if (next_PART_request != null)
                     {
-                        Debug.Log(storageName + " found NEXT PART req");
+                        //Debug.Log(storageName + " found NEXT PART req");
                         current_PART_request = next_PART_request;
                         next_PART_request = null;
                         RequestPart(current_PART_request);
@@ -197,7 +197,7 @@ public class Storage : MonoBehaviour
     {
         if (currentState == StorageState.IDLE)
         { // I am free to take orders
-            Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
+            //Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
             waitingForPartType = _request.part;
             sendingLineTo = _request.deliverTo;
             current_PART_request = null;
@@ -222,7 +222,7 @@ public class Storage : MonoBehaviour
         if (currentState == StorageState.IDLE)
 
         { // I am free to take orders
-            Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
+            //Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
             waitingForPartType = _request.part;
             sendingLineTo = _request.deliverTo;
             current_CHASSIS_request = null;
@@ -269,7 +269,7 @@ public class Storage : MonoBehaviour
         }
         else
         {
-            Factory.INSTANCE.ALERT_WorkshopPartUnavailable();
+            Factory.INSTANCE.ALERT_WorkshopPartUnavailable(_request.part);
         }
     }
 
@@ -301,7 +301,7 @@ public class Storage : MonoBehaviour
         }
         else
         {
-            Factory.INSTANCE.ALERT_WorkshopPartUnavailable();
+            Factory.INSTANCE.ALERT_WorkshopPartUnavailable(_request.part);
         }
     }
 
@@ -422,7 +422,7 @@ public class Storage : MonoBehaviour
     {
         if (parts_OUT.Length > 0)
         {
-            Debug.Log(storageName +" _ "+ currentState +" sending " + parts_OUT.Length);
+            //Debug.Log(storageName +" _ "+ currentState +" sending " + parts_OUT.Length);
             List<VehiclePart> _SENT_PARTS = sendingLineTo.RecieveParts(parts_OUT);
             for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
             {
