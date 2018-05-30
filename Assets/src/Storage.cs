@@ -108,15 +108,18 @@ public class Storage : MonoBehaviour
         {
             taskStep = 0;
             currentState = _newState;
+            Debug.Log(storageName + ": " + currentState);
             switch (currentState)
             {
                 case StorageState.IDLE:
                     // grab chassis / part if a request is pending
-                    if(current_CHASSIS_request != null){
+                    if (current_CHASSIS_request != null)
+                    {
                         //Debug.Log(storageName +  " found current CHASSIS req");
                         RequestChassis(current_CHASSIS_request);
                     }
-                    else if(current_PART_request != null){
+                    else if (current_PART_request != null)
+                    {
                         //Debug.Log(storageName + " found current PART req");
                         RequestPart(current_PART_request);
                     }
@@ -153,6 +156,8 @@ public class Storage : MonoBehaviour
                 break;
             case StorageState.WAITING:
                 break;
+            case StorageState.WAIT_FOR_PURGED_DATA:
+                break;
             default:
                 if (taskStep == taskDuration)
                 {
@@ -168,6 +173,21 @@ public class Storage : MonoBehaviour
 
         factor = (float)taskStep / (float)taskDuration;
     }
+    public bool HasViableChassis(int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
+    {
+        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+        {
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                if (IsChassisViable(_lineIndex, _slotIndex, _chassisVersion, _requiredParts))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     #endregion State / Update >
     #region < Send / Recieve
 
@@ -190,7 +210,9 @@ public class Storage : MonoBehaviour
                 current_PART_request = _request;
                 Dump_LINE();
             }
-        }else{
+        }
+        else
+        {
             next_PART_request = _request;
         }
     }
@@ -198,7 +220,7 @@ public class Storage : MonoBehaviour
     {
 
         if (currentState == StorageState.IDLE)
-            
+
         { // I am free to take orders
             Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
             waitingForPartType = _request.part;
@@ -243,11 +265,11 @@ public class Storage : MonoBehaviour
         {
             // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
             ChangeState(StorageState.WAITING);
-
-
             getsPartsFrom.RequestPart(new VehiclePartRequest(_request.part, this));
-        }else{
-            CancelOrder();
+        }
+        else
+        {
+            Factory.INSTANCE.ALERT_WorkshopPartUnavailable();
         }
     }
 
@@ -276,9 +298,10 @@ public class Storage : MonoBehaviour
 
 
             getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
-        }else
+        }
+        else
         {
-            CancelOrder();
+            Factory.INSTANCE.ALERT_WorkshopPartUnavailable();
         }
     }
 
@@ -354,7 +377,7 @@ public class Storage : MonoBehaviour
         {
             //Debug.Log(storageName + " recieved: " + _parts.Length);
             List<VehiclePart> stored = _parts.ToList();
-            if (currentState == StorageState.IDLE || currentState == StorageState.WAITING)
+            if (currentState == StorageState.IDLE || currentState == StorageState.WAITING || currentState == StorageState.WAIT_FOR_PURGED_DATA)
             {
                 if (freeSpace > 0)
                 {
@@ -399,7 +422,7 @@ public class Storage : MonoBehaviour
     {
         if (parts_OUT.Length > 0)
         {
-            Debug.Log(storageName +  " sending " + parts_OUT.Length);
+            Debug.Log(storageName +" _ "+ currentState +" sending " + parts_OUT.Length);
             List<VehiclePart> _SENT_PARTS = sendingLineTo.RecieveParts(parts_OUT);
             for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
             {
@@ -419,6 +442,18 @@ public class Storage : MonoBehaviour
             current_CHASSIS_request = null;
         }
         ChangeState(StorageState.IDLE);
+    }
+
+    public void AWAIT_PURGED_DATA()
+    {
+        ClearRequests();
+        ChangeState(StorageState.WAIT_FOR_PURGED_DATA);
+    }
+    public void ClearRequests(){
+        current_PART_request = null;
+        current_CHASSIS_request = null;
+        next_PART_request = null;
+        next_CHASSIS_request = null;
     }
     #endregion Send / Recieve >
     #region < Slot Management
@@ -498,10 +533,8 @@ public class Storage : MonoBehaviour
     }
     public void Dump_SLOTS(int _count, int _lineIndex = 0)
     {
-
-        if (currentState == StorageState.IDLE)
+        if (currentState == StorageState.IDLE || currentState == StorageState.WAIT_FOR_PURGED_DATA)
         {
-            Debug.Log(storageName + " DUMP");
             ChangeState(StorageState.DUMP);
             List<VehiclePart> dumpList = new List<VehiclePart>();
             StorageLine _LINE = storageLines[_lineIndex];
@@ -514,6 +547,20 @@ public class Storage : MonoBehaviour
             }
             sendingLineTo = getsPartsFrom;
             parts_OUT = dumpList.ToArray();
+        }
+    }
+    public void Dump_earliestLineWithData()
+    {
+        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+        {
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                if (storageLines[_lineIndex].slots[_slotIndex] != null)
+                {
+                    Dump_LINE(_lineIndex);
+                    return;
+                }
+            }
         }
     }
 
@@ -551,21 +598,6 @@ public class Storage : MonoBehaviour
             sendingLineTo = getsPartsFrom;
             parts_OUT = dumpList.ToArray();
         }
-    }
-
-    public void CancelOrder(){
-
-        //Debug.Log(storageName + " CANCEL");
-        //    current_PART_request = null;
-        //    current_CHASSIS_request = null;
-        //next_PART_request = null;
-        //next_CHASSIS_request = null;
-        //ChangeState(StorageState.IDLE);
-        //if (sendingLineTo !=null)
-        //{
-        //    sendingLineTo.CancelOrder();
-        //}
-
     }
 
     private void OnDrawGizmos()
@@ -644,7 +676,8 @@ public enum StorageState
     IDLE,
     WAITING,
     FETCHING,
-    DUMP
+    DUMP,
+    WAIT_FOR_PURGED_DATA
 }
 
 public class VehiclePartRequest

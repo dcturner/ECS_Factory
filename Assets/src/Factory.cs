@@ -222,6 +222,24 @@ public class Factory : SerializedMonoBehaviour
         }
     }
 
+    public void ALERT_WorkshopPartUnavailable(){
+        Debug.Log("PART SHORTAGE");
+        L3.ClearRequests();
+        RAM.ClearRequests();
+        HD.ClearRequests();
+
+        L3.ChangeState(StorageState.IDLE);
+        RAM.ChangeState(StorageState.IDLE);
+        HD.ChangeState(StorageState.IDLE);
+
+        foreach (Workshop _WORKSHOP in workshops)
+        {
+            if(!_WORKSHOP.workShopHasChassis){
+                _WORKSHOP.PurgePartsToSharedStorage();
+            }
+        }
+    }
+
     #region ------------------------- < MOVE PARTS BETWEEN STORAGE
 
     public void OrderParts(Storage _target)

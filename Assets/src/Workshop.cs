@@ -15,10 +15,14 @@ public class Workshop : MonoBehaviour
 
     private Queue<WorkshopTask> tasklist;
     public WorkshopTask currentTask = null;
+    public List<VehiclePart_CHASSIS> workshop_viableChassis;
+    public bool workShopHasChassis = false;
+    public bool purgingPartsToSharedStorage = false;
 
     private void Awake()
     {
         tasklist = new Queue<WorkshopTask>();
+        workshop_viableChassis = new List<VehiclePart_CHASSIS>();
     }
 
     private void OnDrawGizmos()
@@ -40,16 +44,26 @@ public class Workshop : MonoBehaviour
     // Perform the task as many times as possible
     void PerformTask()
     {
+        if(purgingPartsToSharedStorage){
+            DoPurge();
+            return;
+        }
         if (REG.currentState == StorageState.IDLE)
         {
             VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
 
-            // Does REG have a viable Chassis?
-            List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
-                FindChassis_in_REG(requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+            int _VIABLE_CHASSIS_VERSION = requiredChassis.partConfig.partVersion;
+            Dictionary<VehiclePart_Config, int> _REQUIRED_PARTS = currentTask.requiredParts;
 
-            if (_VIABLE_CHASSIS.Count > 0)
+            bool hasChassis_REG = REG.HasViableChassis(_VIABLE_CHASSIS_VERSION, _REQUIRED_PARTS);
+            // Does REG have a viable Chassis?
+
+
+            if (hasChassis_REG)
             {
+                workShopHasChassis = true;
+                List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
+                FindChassis_in_storage(REG, requiredChassis.partConfig.partVersion, currentTask.requiredParts);
                 // which required parts do I have?
                 List<VehiclePart> _viableParts = new List<VehiclePart>();
                 List<VehiclePart_Config> _TASK_PARTS = currentTask.requiredParts.Keys.ToList();
@@ -141,10 +155,26 @@ public class Workshop : MonoBehaviour
             }
             else
             {
+
                 // no viable CHASSIS - request some
+
+                bool hasChassis_L1 = L1.HasViableChassis(_VIABLE_CHASSIS_VERSION, _REQUIRED_PARTS);
+                bool hasChassis_L2 = L1.HasViableChassis(_VIABLE_CHASSIS_VERSION, _REQUIRED_PARTS);
+
+                workShopHasChassis = (hasChassis_L1 || hasChassis_L2);
+
                 REG.waitingForPartType = requiredChassis.partConfig;
                 L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
                 requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
+            }
+        }else if(L2.currentState == StorageState.WAITING && Factory.INSTANCE.L3.currentState == StorageState.IDLE){
+            
+            if(L2.current_PART_request !=null){
+                Debug.Log(workshopIndex + "_L2 was waiting for L3 - new req sent");
+                Factory.INSTANCE.L3.ClearRequests();
+                Factory.INSTANCE.RAM.ClearRequests();
+                Factory.INSTANCE.HD.ClearRequests();
+                Factory.INSTANCE.L3.RequestPart(new VehiclePartRequest(L2.current_PART_request.part, L2));
             }
         }
     }
@@ -164,22 +194,41 @@ public class Workshop : MonoBehaviour
         }
     }
 
-    public List<VehiclePart_CHASSIS> FindChassis_in_REG(int _chassisVersion,
-       Dictionary<VehiclePart_Config, int> _requiredParts)
-    {
+    public List<VehiclePart_CHASSIS> FindChassis_in_storage(Storage _storage, int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts){
         List<VehiclePart_CHASSIS> _result = new List<VehiclePart_CHASSIS>();
         // Iterate through LINES
 
-        for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
+        for (int _slotIndex = 0; _slotIndex < _storage.lineLength; _slotIndex++)
         {
-            if (REG.IsChassisViable(0, _slotIndex, _chassisVersion, _requiredParts))
+            if (_storage.IsChassisViable(0, _slotIndex, _chassisVersion, _requiredParts))
             {
-                _result.Add(REG.storageLines[0].slots[_slotIndex] as VehiclePart_CHASSIS);
+                _result.Add(_storage.storageLines[0].slots[_slotIndex] as VehiclePart_CHASSIS);
             }
         }
         return _result;
     }
 
+    public void PurgePartsToSharedStorage(){
+        Debug.Log("PURGE WORKSHOP: " + workshopIndex);
+        Factory.INSTANCE.L3.AWAIT_PURGED_DATA();
+        L2.AWAIT_PURGED_DATA();
+        L1.AWAIT_PURGED_DATA();
+        purgingPartsToSharedStorage = true;
+    }
+
+    public void DoPurge(){
+
+        if(REG.usedSpace>0){
+            REG.Dump_LINE();
+        }else if(L1.usedSpace > 0){
+            Factory.INSTANCE.L3.AWAIT_PURGED_DATA();
+            L1.Dump_earliestLineWithData();
+
+        }else if(L2.usedSpace > 0){
+            Factory.INSTANCE.L3.AWAIT_PURGED_DATA();
+            L2.Dump_earliestLineWithData();
+        }
+    }
 }
 
 public class WorkshopTask
