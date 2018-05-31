@@ -179,11 +179,15 @@ public class Factory : SerializedMonoBehaviour
                 {
                     foreach (var _DESIGN_PART in _VEHICLE_DESIGN.quantities.Keys)
                     {
-                        if(!_uniqueTasks.Contains(_DESIGN_PART)){
-                            _uniqueTasks.Add(_DESIGN_PART);
-                            Dictionary<VehiclePart_Config, int> _targetPart = new Dictionary<VehiclePart_Config, int>();
-                            _targetPart.Add(_DESIGN_PART, 1);
-                            workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN,_targetPart));
+                        if (_DESIGN_PART.partType != Vehicle_PartType.CHASSIS)
+                        {
+                            if (!_uniqueTasks.Contains(_DESIGN_PART))
+                            {
+                                _uniqueTasks.Add(_DESIGN_PART);
+                                Dictionary<VehiclePart_Config, int> _targetPart = new Dictionary<VehiclePart_Config, int>();
+                                _targetPart.Add(_DESIGN_PART, 1);
+                                workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN, _targetPart));
+                            }
                         }
                     }
                 }

@@ -341,6 +341,7 @@ public class Storage : MonoBehaviour
         {
             if (_CHASSIS.partsNeeded.Count > 0)
             {
+                Debug.Log("checking chassis: " + _CHASSIS.name);
                 var _PARTS_FITTED = _CHASSIS.partsFitted;
 
                 // If chassis has less a defecit of our required parts, grab it
@@ -350,7 +351,6 @@ public class Storage : MonoBehaviour
                     int _QUANTITY = _PAIR.Value;
                     if (_REQ_PART.partType != Vehicle_PartType.CHASSIS)
                     {
-
                         if (_CHASSIS.partsFitted.ContainsKey(_REQ_PART))
                         {
                             if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)

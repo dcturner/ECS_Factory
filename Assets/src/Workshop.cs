@@ -119,6 +119,7 @@ public class Workshop : MonoBehaviour
 
                 if (_viableParts.Count > 0)
                 {
+                    Debug.Log(workshopIndex + " viable parts: " + _viableParts.Count);
                     for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
                     {
                         var _PART = REG.storageLines[0].slots[_slotIndex];
@@ -169,19 +170,20 @@ public class Workshop : MonoBehaviour
                     }
                     else
                     {
+                        REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
                         // no space available - get rid of unwanted parts
-                        switch (factoryMode)
-                        {
-                            case FactoryMode.OOP:
-                                // OOP mode keep chassis
-                                REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
-                                break;
-                            case FactoryMode.DOD:
-                                // DOD mode - keep task parts - chassis can go if not viable
-                                KeyValuePair<VehiclePart_Config, int> _taskPart = currentTask.requiredParts.First();
-                                REG.DUMP_fromLine_exceptType(0, _taskPart.Key.partType, _taskPart.Value);
-                                break;
-                        }
+                        //switch (factoryMode)
+                        //{
+                        //    case FactoryMode.OOP:
+                        //        // OOP mode keep chassis
+                        //        REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
+                        //        break;
+                        //    case FactoryMode.DOD:
+                        //        // keep 1 viable chassis
+                        //        KeyValuePair<VehiclePart_Config, int> _taskPart = currentTask.requiredParts.First();
+                        //        REG.DUMP_fromLine_exceptType(0, _taskPart.Key.partType, _taskPart.Value);
+                        //        break;
+                        //}
                     }
                 }
             }
