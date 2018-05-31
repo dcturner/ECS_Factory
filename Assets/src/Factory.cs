@@ -151,6 +151,11 @@ public class Factory : SerializedMonoBehaviour
         workshopTasks = new List<WorkshopTask>();
 
         // STEP TWO - Depending on the approach (OOP / DOD), setup workshop tasks
+        foreach (Workshop _WORKSHOP in workshops)
+        {
+            _WORKSHOP.Init(factoryMode);
+        }
+
         switch (factoryMode)
         {
             case FactoryMode.OOP:
@@ -167,6 +172,28 @@ public class Factory : SerializedMonoBehaviour
 
                 break;
             case FactoryMode.DOD:
+                // for each design, add tasks to a macro list
+                Dictionary<VehiclePart_Config, int> taskGroups = new Dictionary<VehiclePart_Config, int>();
+                List<VehiclePart_Config> _uniqueTasks = new List<VehiclePart_Config>();
+                foreach (VehicleDesign _VEHICLE_DESIGN in vehicleOrder.Keys)
+                {
+                    foreach (var _DESIGN_PART in _VEHICLE_DESIGN.quantities.Keys)
+                    {
+                        if(!_uniqueTasks.Contains(_DESIGN_PART)){
+                            _uniqueTasks.Add(_DESIGN_PART);
+                            Dictionary<VehiclePart_Config, int> _targetPart = new Dictionary<VehiclePart_Config, int>();
+                            _targetPart.Add(_DESIGN_PART, 1);
+                            workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN,_targetPart));
+                        }
+                    }
+                }
+
+                for (int _workshopIndex = 0; _workshopIndex < workshops.Count; _workshopIndex++)
+                {
+                    Workshop _W = workshops[_workshopIndex];
+                    _W.currentTask = workshopTasks[_workshopIndex % workshopTasks.Count];
+                }
+
                 break;
         }
     }

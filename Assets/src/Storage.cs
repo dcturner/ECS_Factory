@@ -173,13 +173,13 @@ public class Storage : MonoBehaviour
 
         factor = (float)taskStep / (float)taskDuration;
     }
-    public bool HasViableChassis(int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
+    public bool HasViableChassis(VehicleChassiRequest _request)
     {
         for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
         {
             for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
             {
-                if (IsChassisViable(_lineIndex, _slotIndex, _chassisVersion, _requiredParts))
+                if (IsChassisViable(_lineIndex, _slotIndex,_request))
                 {
                     return true;
                 }
@@ -282,7 +282,7 @@ public class Storage : MonoBehaviour
         {
             for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
             {
-                if (IsChassisViable(_lineIndex, _slotIndex, _request.chassisVersion, _request.requiredParts))
+                if (IsChassisViable(_lineIndex, _slotIndex, _request))
                 {
                     Set_parts_OUT(_lineIndex);
                     ChangeState(StorageState.FETCHING);
@@ -297,7 +297,7 @@ public class Storage : MonoBehaviour
             ChangeState(StorageState.WAITING);
 
 
-            getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this));
+            getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this, _request.factoryMode));
         }
         else
         {
@@ -319,7 +319,7 @@ public class Storage : MonoBehaviour
         parts_OUT = _partsToSend.ToArray();
     }
 
-    public bool IsChassisViable(int _lineIndex, int _slotIndex, int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
+    public bool IsChassisViable(int _lineIndex, int _slotIndex, VehicleChassiRequest _request)
     {
         StorageLine _LINE = storageLines[_lineIndex];
         VehiclePart _SLOT = _LINE.slots[_slotIndex];
@@ -329,7 +329,7 @@ public class Storage : MonoBehaviour
             if (_SLOT.partConfig.partType == Vehicle_PartType.CHASSIS)
             { // part IS a chassis
 
-                if (_SLOT.partConfig.partVersion == _chassisVersion)
+                if (_SLOT.partConfig.partVersion == _request.chassisVersion || _request.factoryMode == FactoryMode.DOD)
                 { // is Correct chassis type
 
                     _CHASSIS = _SLOT as VehiclePart_CHASSIS;
@@ -344,7 +344,7 @@ public class Storage : MonoBehaviour
                 var _PARTS_FITTED = _CHASSIS.partsFitted;
 
                 // If chassis has less a defecit of our required parts, grab it
-                foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _requiredParts)
+                foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _request.requiredParts)
                 {
                     VehiclePart_Config _REQ_PART = _PAIR.Key;
                     int _QUANTITY = _PAIR.Value;
@@ -696,15 +696,17 @@ public class VehicleChassiRequest : VehiclePartRequest
 {
     public int chassisVersion;
     public Dictionary<VehiclePart_Config, int> requiredParts;
+    public FactoryMode factoryMode;
 
     public VehicleChassiRequest(VehiclePart_Config _part, int _chassisVersion,
-        Dictionary<VehiclePart_Config, int> _requiredParts, Storage _deliverTo)
+                                Dictionary<VehiclePart_Config, int> _requiredParts, Storage _deliverTo, FactoryMode _factoryMode)
         : base(_part, _deliverTo)
     {
         part = _part;
         chassisVersion = _chassisVersion;
         requiredParts = _requiredParts;
         deliverTo = _deliverTo;
+        factoryMode = _factoryMode;
     }
 }
 

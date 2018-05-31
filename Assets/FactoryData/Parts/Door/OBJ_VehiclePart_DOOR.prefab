@@ -140,3 +140,4 @@ MonoBehaviour:
   partConfig: {fileID: 11400000, guid: 03cb5610bf46349caa6f0da8956cd76a, type: 2}
   age: 0
   id: 0
+  temp_score: 0

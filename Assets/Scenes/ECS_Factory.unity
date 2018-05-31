@@ -557,10 +557,10 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 0, g: 0, b: 0, a: 1}
   isLastInChain: 0
-  taskDuration: 5
+  taskDuration: 20
   linesX: 16
   linesY: 2
-  linesZ: 8
+  linesZ: 10
   lineLength: 8
   lines_groupBy_Y: 2
   lines_groupBy_Z: 2
@@ -702,7 +702,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
   isLastInChain: 1
-  taskDuration: 5
+  taskDuration: 40
   linesX: 16
   linesY: 16
   linesZ: 16
@@ -769,7 +769,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
   isLastInChain: 0
-  taskDuration: 5
+  taskDuration: 10
   linesX: 16
   linesY: 1
   linesZ: 14

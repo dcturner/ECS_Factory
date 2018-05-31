@@ -9,6 +9,7 @@ using UnityEngine.AI;
 
 public class Workshop : MonoBehaviour
 {
+    public FactoryMode factoryMode;
     public int workshopIndex;
     public float width, height;
     public Storage L2, L1, REG;
@@ -27,7 +28,13 @@ public class Workshop : MonoBehaviour
         workshop_viableChassis = new List<VehiclePart_CHASSIS>();
     }
 
-    private void OnDrawGizmos()
+    public void Init(FactoryMode _factoryMode)
+	{
+        factoryMode = _factoryMode;
+        Debug.Log(workshopIndex +  " MODE: " + _factoryMode);
+	}
+
+	private void OnDrawGizmos()
     {
         if (L2 && L1 && REG)
         {
@@ -56,35 +63,42 @@ public class Workshop : MonoBehaviour
         }
         if (REG.currentState == StorageState.IDLE)
         {
-            VehiclePart_CHASSIS requiredChassis = currentTask.design.chassisType;
 
-            int _VIABLE_CHASSIS_VERSION = requiredChassis.partConfig.partVersion;
-            Dictionary<VehiclePart_Config, int> _REQUIRED_PARTS = currentTask.requiredParts;
+            // OOP / DOD different ways to determine if REG has a viable chassis
+            bool REG_hasChassis = false;
+            VehicleChassiRequest _CHASSIS_REQUEST = new VehicleChassiRequest(null,-1,null,null,FactoryMode.OOP);
+            switch (factoryMode)
+            {
+                case FactoryMode.OOP:
+                    _CHASSIS_REQUEST = new VehicleChassiRequest(currentTask.design.chassisType.partConfig, currentTask.design.chassisType.partConfig.partVersion, currentTask.requiredParts, REG, FactoryMode.OOP);
+                        REG_hasChassis = REG.HasViableChassis(_CHASSIS_REQUEST);
+                    break;
+                case FactoryMode.DOD:
+                    _CHASSIS_REQUEST = new VehicleChassiRequest(currentTask.requiredParts.First().Key, -1, currentTask.requiredParts, REG, FactoryMode.DOD);
+                        REG_hasChassis = REG.HasViableChassis(_CHASSIS_REQUEST);
+                    break;
+            }
 
-            bool hasChassis_REG = REG.HasViableChassis(_VIABLE_CHASSIS_VERSION, _REQUIRED_PARTS);
-            // Does REG have a viable Chassis?
-
-
-            if (hasChassis_REG)
+            if (REG_hasChassis)
             {
                 workShopHasChassis = true;
                 List<VehiclePart_CHASSIS> _VIABLE_CHASSIS =
-                FindChassis_in_storage(REG, requiredChassis.partConfig.partVersion, currentTask.requiredParts);
+                    FindChassis_in_storage(REG, _CHASSIS_REQUEST);
+                
                 // which required parts do I have?
                 List<VehiclePart> _viableParts = new List<VehiclePart>();
                 List<VehiclePart_Config> _TASK_PARTS = currentTask.requiredParts.Keys.ToList();
-
 
                 // If part is NOT a chassis and is used in the current TASK - add it to VIABLE_PARTS
                 for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
                 {
                     if (REG.storageLines[0].slots[_slotIndex] != null)
                     {
+                        
                         var _PART = REG.storageLines[0].slots[_slotIndex];
-                        //                Debug.Log("Checking part: " + _PART.partConfig.name);
                         if (_PART.partConfig.partType != Vehicle_PartType.CHASSIS)
                         {
-                            //                    Debug.Log("not chassis found: " + _PART.partConfig.name);
+
                             if (_TASK_PARTS.Contains(_PART.partConfig))
                             {
                                 foreach (VehiclePart_CHASSIS _CHASSIS in _VIABLE_CHASSIS)
@@ -102,7 +116,7 @@ public class Workshop : MonoBehaviour
                         }
                     }
                 }
-                //Debug.Log("REG - vP: " + _viableParts.Count + ", vC: " + _VIABLE_CHASSIS.Count);
+
                 if (_viableParts.Count > 0)
                 {
                     for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
@@ -110,7 +124,6 @@ public class Workshop : MonoBehaviour
                         var _PART = REG.storageLines[0].slots[_slotIndex];
                         if (_viableParts.Contains(_PART))
                         {
-
                             for (int _chassisIndex = 0; _chassisIndex < _VIABLE_CHASSIS.Count; _chassisIndex++)
                             {
                                 if (_VIABLE_CHASSIS[_chassisIndex].AttachPart(_PART.partConfig, _PART.gameObject))
@@ -156,8 +169,19 @@ public class Workshop : MonoBehaviour
                     }
                     else
                     {
-                        // no space available - get rid of everything except one viable chassis
-                        REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
+                        // no space available - get rid of unwanted parts
+                        switch (factoryMode)
+                        {
+                            case FactoryMode.OOP:
+                                // OOP mode keep chassis
+                                REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
+                                break;
+                            case FactoryMode.DOD:
+                                // DOD mode - keep task parts - chassis can go if not viable
+                                KeyValuePair<VehiclePart_Config, int> _taskPart = currentTask.requiredParts.First();
+                                REG.DUMP_fromLine_exceptType(0, _taskPart.Key.partType, _taskPart.Value);
+                                break;
+                        }
                     }
                 }
             }
@@ -166,15 +190,14 @@ public class Workshop : MonoBehaviour
 
                 // no viable CHASSIS - request some
 
-                bool hasChassis_L1 = L1.HasViableChassis(_VIABLE_CHASSIS_VERSION, _REQUIRED_PARTS);
-                bool hasChassis_L2 = L1.HasViableChassis(_VIABLE_CHASSIS_VERSION, _REQUIRED_PARTS);
+                bool hasChassis_L1 = L1.HasViableChassis(_CHASSIS_REQUEST);
+                bool hasChassis_L2 = L1.HasViableChassis(_CHASSIS_REQUEST);
 
                 workShopHasChassis = (hasChassis_L1 || hasChassis_L2);
 
-                REG.waitingForPartType = requiredChassis.partConfig;
+                REG.waitingForPartType = _CHASSIS_REQUEST.part;
                 REG.ChangeState(StorageState.WAITING);
-                L1.RequestChassis(new VehicleChassiRequest(requiredChassis.partConfig,
-                requiredChassis.partConfig.partVersion, currentTask.requiredParts, REG));
+                L1.RequestChassis(_CHASSIS_REQUEST);
             }
         }
         else if (L2.currentState == StorageState.WAITING && Factory.INSTANCE.L3.currentState == StorageState.IDLE)
@@ -210,14 +233,14 @@ public class Workshop : MonoBehaviour
         }
     }
 
-    public List<VehiclePart_CHASSIS> FindChassis_in_storage(Storage _storage, int _chassisVersion, Dictionary<VehiclePart_Config, int> _requiredParts)
+    public List<VehiclePart_CHASSIS> FindChassis_in_storage(Storage _storage, VehicleChassiRequest _request)
     {
         List<VehiclePart_CHASSIS> _result = new List<VehiclePart_CHASSIS>();
         // Iterate through LINES
 
         for (int _slotIndex = 0; _slotIndex < _storage.lineLength; _slotIndex++)
         {
-            if (_storage.IsChassisViable(0, _slotIndex, _chassisVersion, _requiredParts))
+            if (_storage.IsChassisViable(0, _slotIndex, _request))
             {
                 _result.Add(_storage.storageLines[0].slots[_slotIndex] as VehiclePart_CHASSIS);
             }

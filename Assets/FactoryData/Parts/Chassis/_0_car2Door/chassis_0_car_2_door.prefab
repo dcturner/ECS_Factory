@@ -151,7 +151,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 3facd38f8bc19437f975384180ab3ffb, type: 2}
+  - {fileID: 2100000, guid: af020a2e5e9ed4c01a65615a0494fb2f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -186,7 +186,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 3facd38f8bc19437f975384180ab3ffb, type: 2}
+  - {fileID: 2100000, guid: af020a2e5e9ed4c01a65615a0494fb2f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -221,7 +221,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 3facd38f8bc19437f975384180ab3ffb, type: 2}
+  - {fileID: 2100000, guid: af020a2e5e9ed4c01a65615a0494fb2f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -312,7 +312,9 @@ MonoBehaviour:
   partConfig: {fileID: 11400000, guid: 762e44f2055674e2bacfa8407a98c9ab, type: 2}
   age: 0
   id: 0
+  temp_score: 0
   design: {fileID: 11400000, guid: 7cb9a81b233954f3390e36e55b3c8211, type: 2}
   chassisType: 0
   totalpartsFitted: 0
   tempCriteriaMet: 0
+  vehicleIsComplete: 0
