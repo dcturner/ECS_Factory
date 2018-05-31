@@ -74,7 +74,7 @@ public class Workshop : MonoBehaviour
                         REG_hasChassis = REG.HasViableChassis(_CHASSIS_REQUEST);
                     break;
                 case FactoryMode.DOD:
-                    _CHASSIS_REQUEST = new VehicleChassiRequest(currentTask.requiredParts.First().Key, -1, currentTask.requiredParts, REG, FactoryMode.DOD);
+                    _CHASSIS_REQUEST = new VehicleChassiRequest(null, -1, currentTask.requiredParts, REG, FactoryMode.DOD);
                         REG_hasChassis = REG.HasViableChassis(_CHASSIS_REQUEST);
                     break;
             }

@@ -187,6 +187,7 @@ public class Factory : SerializedMonoBehaviour
                                 Dictionary<VehiclePart_Config, int> _targetPart = new Dictionary<VehiclePart_Config, int>();
                                 _targetPart.Add(_DESIGN_PART, 1);
                                 workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN, _targetPart));
+                                Debug.Log("DOD: ADDED WORKSHOP TASK: " + _DESIGN_PART);
                             }
                         }
                     }

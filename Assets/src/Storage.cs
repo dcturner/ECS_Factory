@@ -297,7 +297,7 @@ public class Storage : MonoBehaviour
             ChangeState(StorageState.WAITING);
 
 
-            getsPartsFrom.RequestPart(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this, _request.factoryMode));
+            getsPartsFrom.RequestChassis(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this, _request.factoryMode));
         }
         else
         {
@@ -328,10 +328,8 @@ public class Storage : MonoBehaviour
         {
             if (_SLOT.partConfig.partType == Vehicle_PartType.CHASSIS)
             { // part IS a chassis
-
                 if (_SLOT.partConfig.partVersion == _request.chassisVersion || _request.factoryMode == FactoryMode.DOD)
                 { // is Correct chassis type
-
                     _CHASSIS = _SLOT as VehiclePart_CHASSIS;
                 }
             }
@@ -341,7 +339,7 @@ public class Storage : MonoBehaviour
         {
             if (_CHASSIS.partsNeeded.Count > 0)
             {
-                Debug.Log("checking chassis: " + _CHASSIS.name);
+                
                 var _PARTS_FITTED = _CHASSIS.partsFitted;
 
                 // If chassis has less a defecit of our required parts, grab it
@@ -355,16 +353,19 @@ public class Storage : MonoBehaviour
                         {
                             if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
                             {
+                                Debug.Log(_CHASSIS.name +  " needs " + _REQ_PART);
                                 return true;
                             }
                         }
                         else
                         {
+                            Debug.Log(_CHASSIS.name + " needs " + _REQ_PART);
                             return true;
                         }
                     }
                 }
             }
+
         }
         return false;
     }
