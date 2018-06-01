@@ -105,7 +105,6 @@ public class Workshop : MonoBehaviour
 
                 if (_viableParts.Count > 0)
                 {
-                    Debug.Log(workshopIndex + " viable parts: " + _viableParts.Count);
                     for (int _slotIndex = 0; _slotIndex < REG.lineLength; _slotIndex++)
                     {
                         var _PART = REG.storageLines[0].slots[_slotIndex];
@@ -175,15 +174,22 @@ public class Workshop : MonoBehaviour
             {
 
                 // no viable CHASSIS - request some
+                if (REG.freeSpace == 0)
+                {
+                    REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 0);
+                }
+                else
+                {
 
-                bool hasChassis_L1 = L1.HasViableChassis(_CHASSIS_REQUEST);
-                bool hasChassis_L2 = L1.HasViableChassis(_CHASSIS_REQUEST);
+                    bool hasChassis_L1 = L1.HasViableChassis(_CHASSIS_REQUEST);
+                    bool hasChassis_L2 = L1.HasViableChassis(_CHASSIS_REQUEST);
 
-                workShopHasChassis = (hasChassis_L1 || hasChassis_L2);
+                    workShopHasChassis = (hasChassis_L1 || hasChassis_L2);
 
-                REG.waitingForPartType = _CHASSIS_REQUEST.part;
-                REG.ChangeState(StorageState.WAITING);
-                L1.RequestChassis(_CHASSIS_REQUEST);
+                    REG.waitingForPartType = _CHASSIS_REQUEST.part;
+                    REG.ChangeState(StorageState.WAITING);
+                    L1.RequestChassis(_CHASSIS_REQUEST);
+                }
             }
         }
         else if (L2.currentState == StorageState.WAITING && Factory.INSTANCE.L3.currentState == StorageState.IDLE)

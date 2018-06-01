@@ -295,8 +295,6 @@ public class Storage : MonoBehaviour
         {
             // IF YOU REACH THIS POINT - YOU DONT HAVE THE PARTS, request from the next storage in chain :)
             ChangeState(StorageState.WAITING);
-
-
             getsPartsFrom.RequestChassis(new VehicleChassiRequest(_request.part, _request.chassisVersion, _request.requiredParts, this, _request.factoryMode));
         }
         else
@@ -346,18 +344,20 @@ public class Storage : MonoBehaviour
                 foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _request.requiredParts)
                 {
                     VehiclePart_Config _REQ_PART = _PAIR.Key;
-                    int _QUANTITY = _PAIR.Value;
+                    int _QUANTITY = _CHASSIS.design.quantities[_REQ_PART];
                     if (_REQ_PART.partType != Vehicle_PartType.CHASSIS)
                     {
                         if (_CHASSIS.partsFitted.ContainsKey(_REQ_PART))
                         {
                             if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
                             {
+                                //Debug.Log(storageName +  " sending chassis: " + _CHASSIS.design);
                                 return true;
                             }
                         }
                         else
                         {
+                            //Debug.Log(storageName + " sending chassis: " + _CHASSIS.design);
                             return true;
                         }
                     }
@@ -374,7 +374,6 @@ public class Storage : MonoBehaviour
     {
         if (_parts.Length > 0)
         {
-            //Debug.Log(storageName + " recieved: " + _parts.Length);
             List<VehiclePart> stored = _parts.ToList();
             if (currentState == StorageState.IDLE || currentState == StorageState.WAITING || currentState == StorageState.WAIT_FOR_PURGED_DATA)
             {
@@ -383,11 +382,17 @@ public class Storage : MonoBehaviour
                     if (freeSpace < lineLength)
                     {
                         // not enough room for everyone - check part viability
+                        int targetPartsSaved = 0;
                         for (int _partIndex = 0; _partIndex < _parts.Length; _partIndex++)
                         {
-                            if (_parts[_partIndex].partConfig != waitingForPartType)
+                            if (_parts[_partIndex].partConfig.partType != waitingForPartType.partType)
                             {
                                 stored.Remove(_parts[_partIndex]);
+                            }else{
+                                if(targetPartsSaved>0){
+                                    stored.Remove(_parts[_partIndex]);    
+                                }
+                                targetPartsSaved++;
                             }
                         }
                     }
@@ -602,8 +607,6 @@ public class Storage : MonoBehaviour
     public void DUMP_nonViable_CHASSIS(int _lineIndex, VehicleChassiRequest _request){
         if (currentState == StorageState.IDLE)
         {
-            int partsKept = 0;
-
             List<VehiclePart> dumpList = new List<VehiclePart>();
             StorageLine _LINE = storageLines[_lineIndex];
             for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
