@@ -353,13 +353,11 @@ public class Storage : MonoBehaviour
                         {
                             if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
                             {
-                                Debug.Log(_CHASSIS.name +  " needs " + _REQ_PART);
                                 return true;
                             }
                         }
                         else
                         {
-                            Debug.Log(_CHASSIS.name + " needs " + _REQ_PART);
                             return true;
                         }
                     }
@@ -598,6 +596,30 @@ public class Storage : MonoBehaviour
             }
             sendingLineTo = getsPartsFrom;
             parts_OUT = dumpList.ToArray();
+        }
+    }
+
+    public void DUMP_nonViable_CHASSIS(int _lineIndex, VehicleChassiRequest _request){
+        if (currentState == StorageState.IDLE)
+        {
+            int partsKept = 0;
+
+            List<VehiclePart> dumpList = new List<VehiclePart>();
+            StorageLine _LINE = storageLines[_lineIndex];
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                if(!IsChassisViable(_lineIndex, _slotIndex, _request)){
+                    dumpList.Add(storageLines[_lineIndex].slots[_slotIndex]);
+                }
+            }
+            sendingLineTo = getsPartsFrom;
+            if (dumpList.Count > 0)
+            {
+                ChangeState(StorageState.DUMP);
+                parts_OUT = dumpList.ToArray();
+            }else{
+                DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
+            }
         }
     }
 

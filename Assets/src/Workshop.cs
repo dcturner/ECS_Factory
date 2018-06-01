@@ -63,22 +63,8 @@ public class Workshop : MonoBehaviour
         }
         if (REG.currentState == StorageState.IDLE)
         {
-
-            // OOP / DOD different ways to determine if REG has a viable chassis
-            bool REG_hasChassis = false;
-            VehicleChassiRequest _CHASSIS_REQUEST = new VehicleChassiRequest(null,-1,null,null,FactoryMode.OOP);
-            switch (factoryMode)
-            {
-                case FactoryMode.OOP:
-                    _CHASSIS_REQUEST = new VehicleChassiRequest(currentTask.design.chassisType.partConfig, currentTask.design.chassisType.partConfig.partVersion, currentTask.requiredParts, REG, FactoryMode.OOP);
-                        REG_hasChassis = REG.HasViableChassis(_CHASSIS_REQUEST);
-                    break;
-                case FactoryMode.DOD:
-                    _CHASSIS_REQUEST = new VehicleChassiRequest(null, -1, currentTask.requiredParts, REG, FactoryMode.DOD);
-                        REG_hasChassis = REG.HasViableChassis(_CHASSIS_REQUEST);
-                    break;
-            }
-
+            VehicleChassiRequest _CHASSIS_REQUEST = new VehicleChassiRequest(currentTask.design.chassisType.partConfig, currentTask.design.chassisType.partConfig.partVersion, currentTask.requiredParts, REG, factoryMode);
+            bool REG_hasChassis = REG.HasViableChassis(_CHASSIS_REQUEST);
             if (REG_hasChassis)
             {
                 workShopHasChassis = true;
@@ -170,20 +156,18 @@ public class Workshop : MonoBehaviour
                     }
                     else
                     {
-                        REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
-                        // no space available - get rid of unwanted parts
-                        //switch (factoryMode)
-                        //{
-                        //    case FactoryMode.OOP:
-                        //        // OOP mode keep chassis
-                        //        REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
-                        //        break;
-                        //    case FactoryMode.DOD:
-                        //        // keep 1 viable chassis
-                        //        KeyValuePair<VehiclePart_Config, int> _taskPart = currentTask.requiredParts.First();
-                        //        REG.DUMP_fromLine_exceptType(0, _taskPart.Key.partType, _taskPart.Value);
-                        //        break;
-                        //}
+                        switch (factoryMode)
+                        {
+                            case FactoryMode.OOP:
+                                // clear out parts and keep one viable chassis
+                                REG.DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
+                                break;
+                            case FactoryMode.DOD:
+                                // remove all non-viable chassis
+                                REG.DUMP_nonViable_CHASSIS(0, _CHASSIS_REQUEST);
+                                break;
+                        }
+
                     }
                 }
             }
