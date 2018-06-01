@@ -215,6 +215,9 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+    - Name: attachedParts
+      Entry: 6
+      Data: 
     - Name: CompletedVehicles
       Entry: 6
       Data: 
@@ -557,7 +560,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 0, g: 0, b: 0, a: 1}
   isLastInChain: 0
-  taskDuration: 4
+  taskDuration: 15
   linesX: 16
   linesY: 2
   linesZ: 10
@@ -702,7 +705,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
   isLastInChain: 1
-  taskDuration: 4
+  taskDuration: 20
   linesX: 16
   linesY: 16
   linesZ: 16
@@ -769,7 +772,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
   isLastInChain: 0
-  taskDuration: 4
+  taskDuration: 10
   linesX: 16
   linesY: 1
   linesZ: 14
@@ -854,7 +857,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1899595132799344, guid: 6c141f121dcd3422f81cb47d4144e0a9, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114056152344078698, guid: 6c141f121dcd3422f81cb47d4144e0a9,
         type: 2}

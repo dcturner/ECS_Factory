@@ -170,7 +170,7 @@ public class Factory : SerializedMonoBehaviour
 
                 foreach (Workshop _WORKSHOP in workshops)
                 {
-                    _WORKSHOP.currentTask = workshopTasks[0];
+                    _WORKSHOP.SetCurrentTask(workshopTasks[0]);
                 }
 
                 break;
@@ -199,7 +199,7 @@ public class Factory : SerializedMonoBehaviour
                 for (int _workshopIndex = 0; _workshopIndex < workshops.Count; _workshopIndex++)
                 {
                     Workshop _W = workshops[_workshopIndex];
-                    _W.currentTask = workshopTasks[_workshopIndex % workshopTasks.Count];
+                    _W.SetCurrentTask(workshopTasks[_workshopIndex % workshopTasks.Count]);
                 }
 
                 break;
@@ -236,16 +236,15 @@ public class Factory : SerializedMonoBehaviour
     public void PartAttached(VehiclePart_Config _part, Workshop _workshop)
     {
         attachedParts[_part]++;
-        Debug.Log(_workshop.workshopIndex + " attached " + _part + "  " + attachedParts[_part] + " / " + requiredParts[_part]);
+        //Debug.Log(_workshop.workshopIndex + " attached " + _part + "  " + attachedParts[_part] + " / " + requiredParts[_part]);
         if (attachedParts[_part] == requiredParts[_part])
         {
             if (factoryMode == FactoryMode.DOD)
             {
-
                 workshopTasks.Remove(_workshop.currentTask);
                 if (workshopTasks.Count > 0)
                 {
-                    _workshop.currentTask = workshopTasks[0];
+                    _workshop.SetCurrentTask(workshopTasks[0]);
                     Debug.Log(_workshop.workshopIndex + " TASK COMPLETE: " + _part + ",   new task: " + _workshop.currentTask.requiredParts.First().Key);
                 }
             }
@@ -281,7 +280,7 @@ public class Factory : SerializedMonoBehaviour
                     Debug.Log("Next workshop task: " + workshopTasks[0].design.designName);
                     foreach (var _WORKSHOP in workshops)
                     {
-                        _WORKSHOP.currentTask = workshopTasks[0];
+                        _WORKSHOP.SetCurrentTask(workshopTasks[0]);
                         _WORKSHOP.purgingPartsToSharedStorage = false;
                     }
                 }

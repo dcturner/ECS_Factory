@@ -115,24 +115,24 @@ public class Storage : MonoBehaviour
                     // grab chassis / part if a request is pending
                     if (current_CHASSIS_request != null)
                     {
-                        //Debug.Log(storageName +  " found current CHASSIS req");
+                        Debug.Log(storageName +  " found current CHASSIS req");
                         RequestChassis(current_CHASSIS_request);
                     }
                     else if (current_PART_request != null)
                     {
-                        //Debug.Log(storageName + " found current PART req");
+                        Debug.Log(storageName + " found current PART req");
                         RequestPart(current_PART_request);
                     }
                     else if (next_CHASSIS_request != null)
                     {
-                        //Debug.Log(storageName + " found NEXT CHASSIS req");
+                        Debug.Log(storageName + " found NEXT CHASSIS req");
                         current_CHASSIS_request = next_CHASSIS_request;
                         next_CHASSIS_request = null;
                         RequestChassis(current_CHASSIS_request);
                     }
                     else if (next_PART_request != null)
                     {
-                        //Debug.Log(storageName + " found NEXT PART req");
+                        Debug.Log(storageName + " found NEXT PART req");
                         current_PART_request = next_PART_request;
                         next_PART_request = null;
                         RequestPart(current_PART_request);
@@ -179,9 +179,31 @@ public class Storage : MonoBehaviour
         {
             for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
             {
-                if (IsChassisViable(_lineIndex, _slotIndex,_request))
+                if (IsChassisViable(_lineIndex, _slotIndex, _request))
                 {
                     return true;
+                }
+            }
+        }
+        return false;
+    }
+    public bool HasNonViableChassis(VehicleChassiRequest _request)
+    {
+        for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+        {
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                VehiclePart _PART = storageLines[_lineIndex].slots[_slotIndex];
+                if (_PART != null)
+                {
+                    if (_PART.partConfig.partType == Vehicle_PartType.CHASSIS)
+                    {
+                        if (!IsChassisViable(_lineIndex, _slotIndex, _request))
+                        {
+                            Debug.Log(storageName +  " NVC found " + _lineIndex + "_" + _slotIndex);
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -197,9 +219,9 @@ public class Storage : MonoBehaviour
     {
         if (currentState == StorageState.IDLE)
         { // I am free to take orders
-            //Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
-            waitingForPartType = _request.part;
+            
             sendingLineTo = _request.deliverTo;
+            sendingLineTo.waitingForPartType = _request.part;
             current_PART_request = null;
             if (freeSpace > 0)
             { // do I have space for a new line?
@@ -218,20 +240,21 @@ public class Storage : MonoBehaviour
     }
     public void RequestChassis(VehicleChassiRequest _request)
     {
-
         if (currentState == StorageState.IDLE)
-
-        { // I am free to take orders
-            //Debug.Log(storageName + " ? " + _request.part + ", --> " + _request.deliverTo.storageName);
-            waitingForPartType = _request.part;
+        {
             sendingLineTo = _request.deliverTo;
+            sendingLineTo.waitingForPartType = _request.part;
+
             current_CHASSIS_request = null;
+
             if (freeSpace > 0)
-            { // do I have space for a new line?
+            { 
+                // HAS SPACE
                 Attempt_CHASSIS_request(_request);
             }
             else
-            { // no room, DUMP a line
+            {
+                // NO SPACE
                 current_CHASSIS_request = _request;
                 Dump_LINE();
             }
@@ -254,6 +277,7 @@ public class Storage : MonoBehaviour
                     if (_SLOTS[_slotIndex].partConfig == _request.part)
                     {
                         Set_parts_OUT(_lineIndex);
+                        Debug.Log(storageName + " Fetching: " + _request.part);
                         ChangeState(StorageState.FETCHING);
                         return;
                     }
@@ -337,7 +361,7 @@ public class Storage : MonoBehaviour
         {
             if (_CHASSIS.partsNeeded.Count > 0)
             {
-                
+
                 var _PARTS_FITTED = _CHASSIS.partsFitted;
 
                 // If chassis has less a defecit of our required parts, grab it
@@ -377,6 +401,7 @@ public class Storage : MonoBehaviour
             List<VehiclePart> stored = _parts.ToList();
             if (currentState == StorageState.IDLE || currentState == StorageState.WAITING || currentState == StorageState.WAIT_FOR_PURGED_DATA)
             {
+                Debug.Log(storageName + " recieved: " + _parts.Length);
                 if (freeSpace > 0)
                 {
                     if (freeSpace < lineLength)
@@ -388,9 +413,12 @@ public class Storage : MonoBehaviour
                             if (_parts[_partIndex].partConfig.partType != waitingForPartType.partType)
                             {
                                 stored.Remove(_parts[_partIndex]);
-                            }else{
-                                if(targetPartsSaved>freeSpace){
-                                    stored.Remove(_parts[_partIndex]);    
+                            }
+                            else
+                            {
+                                if (targetPartsSaved > freeSpace)
+                                {
+                                    stored.Remove(_parts[_partIndex]);
                                 }
                                 targetPartsSaved++;
                             }
@@ -426,7 +454,7 @@ public class Storage : MonoBehaviour
     {
         if (parts_OUT.Length > 0)
         {
-            //Debug.Log(storageName +" _ "+ currentState +" sending " + parts_OUT.Length);
+            Debug.Log(storageName +" _ "+ currentState +" sending " + parts_OUT.Length);
             List<VehiclePart> _SENT_PARTS = sendingLineTo.RecieveParts(parts_OUT);
             for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
             {
@@ -453,7 +481,8 @@ public class Storage : MonoBehaviour
         ClearRequests();
         ChangeState(StorageState.WAIT_FOR_PURGED_DATA);
     }
-    public void ClearRequests(){
+    public void ClearRequests()
+    {
         current_PART_request = null;
         current_CHASSIS_request = null;
         next_PART_request = null;
@@ -461,6 +490,31 @@ public class Storage : MonoBehaviour
     }
     #endregion Send / Recieve >
     #region < Slot Management
+
+    public VehiclePart GetSlot(int _lineIndex, int _slotIndex)
+    {
+        return storageLines[_lineIndex].slots[_slotIndex];
+    }
+    public bool SlotIsPartType(int _lineIndex, int _slotIndex, Vehicle_PartType _type)
+    {
+        VehiclePart _SLOT = GetSlot(_lineIndex, _slotIndex);
+        if (_SLOT != null)
+        {
+            if (_SLOT.partConfig.partType == _type)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     private VehiclePart[] AttemptStore(VehiclePart[] _parts)
     {
         if (_parts.Length > 0)
@@ -582,36 +636,36 @@ public class Storage : MonoBehaviour
 
                 if (_PART != null)
                 {
-                    if (_PART.partConfig.partType != _keepThisPart)
+                    if (_PART.partConfig.partType == _keepThisPart)
                     {
-                        dumpList.Add(_PART);
-                    }
-                    else
-                    {
-                        if (partsKept < _maxKept)
-                        {
+                        if(partsKept < _maxKept){
                             partsKept++;
-                        }
-                        else
-                        {
+                        }else{
                             dumpList.Add(_PART);
                         }
                     }
+                    else
+                    {
+                        dumpList.Add(_PART);
+                    }
                 }
             }
+            Debug.Log(" dumped, but kept: " + _keepThisPart + ",  dumping " + dumpList.Count);
             sendingLineTo = getsPartsFrom;
             parts_OUT = dumpList.ToArray();
         }
     }
 
-    public void DUMP_nonViable_CHASSIS(int _lineIndex, VehicleChassiRequest _request){
+    public void DUMP_nonViable_CHASSIS(VehicleChassiRequest _request, int _lineIndex)
+    {
         if (currentState == StorageState.IDLE)
         {
             List<VehiclePart> dumpList = new List<VehiclePart>();
             StorageLine _LINE = storageLines[_lineIndex];
             for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
             {
-                if(!IsChassisViable(_lineIndex, _slotIndex, _request)){
+                if (!IsChassisViable(_lineIndex, _slotIndex, _request))
+                {
                     dumpList.Add(storageLines[_lineIndex].slots[_slotIndex]);
                 }
             }
@@ -620,8 +674,41 @@ public class Storage : MonoBehaviour
             {
                 ChangeState(StorageState.DUMP);
                 parts_OUT = dumpList.ToArray();
-            }else{
+            }
+            else
+            {
                 DUMP_fromLine_exceptType(0, Vehicle_PartType.CHASSIS, 1);
+            }
+        }
+    }
+    public void DUMP_first_nonViable_CHASSIS(VehicleChassiRequest _request)
+    {
+        if (currentState == StorageState.IDLE)
+        {
+            bool foundOnLine = false;
+            List<VehiclePart> dumpList = new List<VehiclePart>();
+            for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
+            {
+                for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+                {
+                    VehiclePart _SLOT = GetSlot(_lineIndex, _slotIndex);
+                    if (SlotIsPartType(_lineIndex, _slotIndex, Vehicle_PartType.CHASSIS))
+                    {
+                        if (!IsChassisViable(_lineIndex, _slotIndex, _request))
+                        {
+                            dumpList.Add(_SLOT);
+                            foundOnLine = true;
+                        }
+                    }
+                }
+                if (foundOnLine) break;
+            }
+            sendingLineTo = getsPartsFrom;
+            if (dumpList.Count > 0)
+            {
+                Debug.Log(storageName + " dumping NVC x " + dumpList.Count);
+                ChangeState(StorageState.DUMP);
+                parts_OUT = dumpList.ToArray();
             }
         }
     }
