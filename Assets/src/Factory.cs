@@ -24,7 +24,7 @@ public class Factory : SerializedMonoBehaviour
 
     public Storage HD, RAM, L3;
     private Storage[] storage;
-    [HideInInspector]public List<Workshop> workshops;
+    [HideInInspector] public List<Workshop> workshops;
     private List<WorkshopTask> workshopTasks;
 
     private int storageCount;
@@ -34,6 +34,7 @@ public class Factory : SerializedMonoBehaviour
     // ORDER
     // Quantity of each design to be built
     public Dictionary<VehicleDesign, int> vehicleOrder;
+    public Dictionary<VehiclePart_Config, int> attachedParts;
     public Dictionary<VehicleDesign, int> CompletedVehicles;
     private Dictionary<VehiclePart_Config, int> requiredParts;
     public bool orderComplete;
@@ -54,6 +55,7 @@ public class Factory : SerializedMonoBehaviour
         storageCount = storage.Length;
         requiredParts = new Dictionary<VehiclePart_Config, int>();
         CompletedVehicles = new Dictionary<VehicleDesign, int>();
+        attachedParts = new Dictionary<VehiclePart_Config, int>();
         orderComplete = false;
     }
 
@@ -91,6 +93,7 @@ public class Factory : SerializedMonoBehaviour
                 {
                     Debug.Log("req: " + _partType + " x " + _TOTAL);
                     requiredParts.Add(_partType, _DESIGN.quantities[_partType] * _TOTAL);
+                    attachedParts.Add(_partType, 0);
                 }
             }
         }
@@ -186,7 +189,7 @@ public class Factory : SerializedMonoBehaviour
                                 _uniqueTasks.Add(_DESIGN_PART);
                                 Dictionary<VehiclePart_Config, int> _targetPart = new Dictionary<VehiclePart_Config, int>();
                                 _targetPart.Add(_DESIGN_PART, 1);
-                                workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN, _targetPart));
+                                workshopTasks.Add(new WorkshopTask(_VEHICLE_DESIGN, _targetPart, requiredParts[_DESIGN_PART]));
                                 Debug.Log("DOD: ADDED WORKSHOP TASK: " + _DESIGN_PART);
                             }
                         }
@@ -230,6 +233,26 @@ public class Factory : SerializedMonoBehaviour
         }
     }
 
+    public void PartAttached(VehiclePart_Config _part, Workshop _workshop)
+    {
+        attachedParts[_part]++;
+        Debug.Log(_workshop.workshopIndex + " attached " + _part + "  " + attachedParts[_part] + " / " + requiredParts[_part]);
+        if (attachedParts[_part] == requiredParts[_part])
+        {
+            if (factoryMode == FactoryMode.DOD)
+            {
+
+                workshopTasks.Remove(_workshop.currentTask);
+                if (workshopTasks.Count > 0)
+                {
+                    _workshop.currentTask = workshopTasks[0];
+                    Debug.Log(_workshop.workshopIndex + " TASK COMPLETE: " + _part + ",   new task: " + _workshop.currentTask.requiredParts.First().Key);
+                }
+            }
+        }
+
+    }
+
     public void VehicleComplete(VehiclePart_CHASSIS _chassis)
     {
         vehicleOrder[_chassis.design]--;
@@ -249,7 +272,9 @@ public class Factory : SerializedMonoBehaviour
             {
                 orderComplete = true;
                 Debug.Log("ORDER COMPLETE in " + tick + " ticks");
-            }else{
+            }
+            else
+            {
                 if (factoryMode == FactoryMode.OOP)
                 {
                     workshopTasks.Remove(workshopTasks[0]);
@@ -279,7 +304,7 @@ public class Factory : SerializedMonoBehaviour
         int _leastUsedSpace = 999999;
         foreach (Workshop _WORKSHOP in workshops)
         {
-            if (_WORKSHOP.usedSpace > 0 && _WORKSHOP.usedSpace< _leastUsedSpace)
+            if (_WORKSHOP.usedSpace > 0 && _WORKSHOP.usedSpace < _leastUsedSpace)
             {
                 _purgeMe = _WORKSHOP;
                 _leastUsedSpace = _WORKSHOP.usedSpace;

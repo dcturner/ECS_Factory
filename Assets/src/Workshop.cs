@@ -115,6 +115,7 @@ public class Workshop : MonoBehaviour
                                 if (_VIABLE_CHASSIS[_chassisIndex].AttachPart(_PART.partConfig, _PART.gameObject))
                                 {
                                     _viableParts.Remove(_PART);
+                                    Factory.INSTANCE.PartAttached(_PART.partConfig, this);
                                     REG.ClearSlot(0, _slotIndex);
                                     break;
                                 }
@@ -166,7 +167,6 @@ public class Workshop : MonoBehaviour
                                 REG.DUMP_nonViable_CHASSIS(0, _CHASSIS_REQUEST);
                                 break;
                         }
-
                     }
                 }
             }
@@ -304,11 +304,15 @@ public class WorkshopTask
     public VehicleDesign design;
     public Dictionary<VehiclePart_Config, int> requiredParts;
     public float ratio_chassis_to_parts;
+    public int totalRequired;
+    public int tasksCompleted;
 
-    public WorkshopTask(VehicleDesign _design, Dictionary<VehiclePart_Config, int> _requiredParts)
+    public WorkshopTask(VehicleDesign _design, Dictionary<VehiclePart_Config, int> _requiredParts, int _totalRequired = 0)
     {
         design = _design;
         requiredParts = _requiredParts;
+        totalRequired = _totalRequired;
+        tasksCompleted = 0;
         int partCount = 0;
         foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in requiredParts)
         {

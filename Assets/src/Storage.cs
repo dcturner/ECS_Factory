@@ -389,7 +389,7 @@ public class Storage : MonoBehaviour
                             {
                                 stored.Remove(_parts[_partIndex]);
                             }else{
-                                if(targetPartsSaved>0){
+                                if(targetPartsSaved>freeSpace){
                                     stored.Remove(_parts[_partIndex]);    
                                 }
                                 targetPartsSaved++;
