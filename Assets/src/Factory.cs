@@ -131,12 +131,12 @@ public class Factory : SerializedMonoBehaviour
             // parts are instantiated - now lets force_quickSave them into "PartsDeliveredTo" (usually RAM)
             if (_LIST_CHASSIS.Count > 0)
             {
-                PartsDeliveredTo.Force_QuickSave(_LIST_CHASSIS.ToArray());
+                PartsDeliveredTo.Force_data_into_storage(_LIST_CHASSIS.ToArray());
             }
 
             if (_LIST_PARTS.Count > 0)
             {
-                PartsDeliveredTo.Force_QuickSave(_LIST_PARTS.ToArray());
+                PartsDeliveredTo.Force_data_into_storage(_LIST_PARTS.ToArray());
             }
         }
     }
@@ -170,7 +170,7 @@ public class Factory : SerializedMonoBehaviour
 
                 foreach (Workshop _WORKSHOP in workshops)
                 {
-                    _WORKSHOP.SetCurrentTask(workshopTasks[0]);
+                    _WORKSHOP.Set_current_task(workshopTasks[0]);
                 }
 
                 break;
@@ -199,7 +199,7 @@ public class Factory : SerializedMonoBehaviour
                 for (int _workshopIndex = 0; _workshopIndex < workshops.Count; _workshopIndex++)
                 {
                     Workshop _W = workshops[_workshopIndex];
-                    _W.SetCurrentTask(workshopTasks[_workshopIndex % workshopTasks.Count]);
+                    _W.Set_current_task(workshopTasks[_workshopIndex % workshopTasks.Count]);
                 }
 
                 break;
@@ -244,7 +244,7 @@ public class Factory : SerializedMonoBehaviour
                 workshopTasks.Remove(_workshop.currentTask);
                 if (workshopTasks.Count > 0)
                 {
-                    _workshop.SetCurrentTask(workshopTasks[0]);
+                    _workshop.Set_current_task(workshopTasks[0]);
                     Debug.Log(_workshop.workshopIndex + " TASK COMPLETE: " + _part + ",   new task: " + _workshop.currentTask.requiredParts.First().Key);
                 }
             }
@@ -280,7 +280,7 @@ public class Factory : SerializedMonoBehaviour
                     Debug.Log("Next workshop task: " + workshopTasks[0].design.designName);
                     foreach (var _WORKSHOP in workshops)
                     {
-                        _WORKSHOP.SetCurrentTask(workshopTasks[0]);
+                        _WORKSHOP.Set_current_task(workshopTasks[0]);
                         _WORKSHOP.purgingPartsToSharedStorage = false;
                     }
                 }
@@ -291,13 +291,13 @@ public class Factory : SerializedMonoBehaviour
     public void ALERT_WorkshopPartUnavailable(VehiclePart_Config _part)
     {
         Debug.Log("PART SHORTAGE: " + _part);
-        L3.ClearRequests();
-        RAM.ClearRequests();
-        HD.ClearRequests();
+        L3.Clear_all_requests();
+        RAM.Clear_all_requests();
+        HD.Clear_all_requests();
 
-        L3.ChangeState(StorageState.IDLE);
-        RAM.ChangeState(StorageState.IDLE);
-        HD.ChangeState(StorageState.IDLE);
+        L3.Change_state(StorageState.IDLE);
+        RAM.Change_state(StorageState.IDLE);
+        HD.Change_state(StorageState.IDLE);
 
         Workshop _purgeMe = null;
         int _leastUsedSpace = 999999;
@@ -307,13 +307,13 @@ public class Factory : SerializedMonoBehaviour
             {
                 _purgeMe = _WORKSHOP;
                 _leastUsedSpace = _WORKSHOP.usedSpace;
-                _WORKSHOP.ClearRequestsAndIdle();
+                _WORKSHOP.Clear_all_requests_then_idle();
             }
         }
 
         if (_purgeMe != null)
         {
-            _purgeMe.PurgePartsToSharedStorage();
+            _purgeMe.Purge_parts_to_shared_storage();
         }
     }
 

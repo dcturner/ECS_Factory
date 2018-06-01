@@ -221,7 +221,7 @@ MonoBehaviour:
     - Name: CompletedVehicles
       Entry: 6
       Data: 
-  factoryMode: 1
+  factoryMode: 0
   PartsDeliveredTo: {fileID: 398428904}
   tickRate: 0.00001
   storageCellSize: 0.45
