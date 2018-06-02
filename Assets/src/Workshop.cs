@@ -20,6 +20,7 @@ public class Workshop : MonoBehaviour
     public VehiclePart_Config currentTaskPart;
     public List<VehiclePart_CHASSIS> REG_viableChassis;
     public List<VehiclePart_CHASSIS> workshop_viableChassis;
+    private VehicleChassiRequest CurrentChassisRequest;
     public List<VehiclePart> REG_viableParts;
     public bool purgingPartsToSharedStorage = false;
 
@@ -51,10 +52,13 @@ public class Workshop : MonoBehaviour
 
     public void Set_current_task(WorkshopTask _task)
     {
-        currentTask = _task;
-        if (factoryMode == FactoryMode.DOD)
+        if (_task != null)
         {
-            currentTaskPart = currentTask.requiredParts.First().Key;
+            currentTask = _task;
+            if (factoryMode == FactoryMode.DOD)
+            {
+                currentTaskPart = currentTask.requiredParts.First().Key;
+            }
         }
     }
 
@@ -67,7 +71,7 @@ public class Workshop : MonoBehaviour
             return;
         }
 
-        VehicleChassiRequest _CHASSIS_REQUEST = new VehicleChassiRequest(
+        CurrentChassisRequest = new VehicleChassiRequest(
             currentTask.design.chassisType.partConfig,
             currentTask.design.chassisType.partConfig.partVersion,
             currentTask.requiredParts,
@@ -77,23 +81,31 @@ public class Workshop : MonoBehaviour
         if (
             REG.currentState == StorageState.IDLE ||
             (REG.currentState == StorageState.WAITING && L1.currentState == StorageState.IDLE))
-        { 
+        {
+            if(REG.currentState == StorageState.IDLE && L1.currentState == StorageState.WAITING){
+                L1.Clear_all_requests();
+                L1.Change_state(StorageState.IDLE);
+            }
+            if(L2.currentState == StorageState.WAITING && Factory.INSTANCE.L3.currentState == StorageState.IDLE){
+                L2.Clear_all_requests();
+                L2.Change_state(StorageState.IDLE);
+            }
             // REG is able to request
-            REG_viableChassis = Get_chassis(REG, _CHASSIS_REQUEST);
+            REG_viableChassis = Get_chassis(REG);
 
             if (REG_viableChassis.Count > 0)
-            { 
+            {
                 // HAS CHASSIS
                 Update_REG_ViableParts();
 
                 if (REG_viableParts.Count > 0)
-                { 
+                {
                     // HAS PARTS
                     Attach_parts();
                     Remove_completed_chassis();
                 }
                 else
-                { 
+                {
                     // NO PARTS
                     bool REG_IS_FULL = REG.freeSpace == 0;
                     switch (factoryMode)
@@ -116,11 +128,11 @@ public class Workshop : MonoBehaviour
 
                             if (REG_IS_FULL)
                             {
-                                REG.Dump_nonViable_chassis(_CHASSIS_REQUEST, 0);
+                                REG.Dump_nonViable_chassis(CurrentChassisRequest, 0);
                             }
                             else
                             {
-                                Request_currentTask_part();
+                                Request_currentTask_part(REG);
                             }
                             break;
                     }
@@ -131,9 +143,9 @@ public class Workshop : MonoBehaviour
 
                 if (REG.freeSpace > 0)
                 {
-                    REG.waitingForPartType = _CHASSIS_REQUEST.part;
+                    REG.waitingForPartType = CurrentChassisRequest.part;
                     REG.Change_state(StorageState.WAITING);
-                    L1.Request_chassis(_CHASSIS_REQUEST);
+                    L1.Request_chassis(CurrentChassisRequest);
                 }
                 else
                 { // NO ROOM, DUMP
@@ -142,28 +154,60 @@ public class Workshop : MonoBehaviour
             }
         }
 
-
-
-        //if (L1.currentState == StorageState.IDLE)
-        //{
-
-        //    if (L1.HasNonViableChassis(_CHASSIS_REQUEST))
-        //    {
-        //        L1.DUMP_first_nonViable_CHASSIS(_CHASSIS_REQUEST);
-        //    }
-        //}
-        //else if (L2.currentState == StorageState.IDLE)
+        if (factoryMode == FactoryMode.DOD)
         {
-            if (L2.Has_nonViable_chassis(_CHASSIS_REQUEST))
-            {
-                L2.DUMP_first_nonViable_chassis(_CHASSIS_REQUEST);
+            Push_nonViable_chassis_to_shared_storage();
+            Push_nonViable_parts_to_shared_storage();
+
+            // if we're waiting for occupied parts, try to purge nonViable parts
+            if(REG.currentState == StorageState.WAITING &&
+               L1.currentState == StorageState.WAITING &&
+               L2.currentState == StorageState.WAITING
+              ){
+                REG.Change_state(StorageState.IDLE);
+                L1.Change_state(StorageState.IDLE);
+                L2.Change_state(StorageState.IDLE);
+            }
+
+            if(L2.currentState == StorageState.IDLE){
+                Request_currentTask_part(L2);
             }
         }
     }
 
-    private void Push_nonViable_items_to_shared_storage()
+    private void Push_nonViable_chassis_to_shared_storage()
     {
-        // push L1 and L2
+        if (REG.Has_nonViable_chassis(CurrentChassisRequest))
+        {
+            REG.Dump_first_nonViable_chassis(CurrentChassisRequest);
+        }
+
+        else if (L1.Has_nonViable_chassis(CurrentChassisRequest))
+        {
+            L1.Dump_first_nonViable_chassis(CurrentChassisRequest);
+        }
+
+        else if (L2.Has_nonViable_chassis(CurrentChassisRequest))
+        {
+            L2.Dump_first_nonViable_chassis(CurrentChassisRequest);
+        }
+    }
+    private void Push_nonViable_parts_to_shared_storage()
+    {
+        if (REG.Contains_nonViablePart(currentTaskPart))
+        {
+            REG.Dump_first_nonViable_part(currentTaskPart);
+        }
+
+        else if (L1.Contains_nonViablePart(currentTaskPart))
+        {
+            L1.Dump_first_nonViable_part(currentTaskPart);
+        }
+
+        else if (L2.Contains_nonViablePart(currentTaskPart))
+        {
+            L2.Dump_first_nonViable_part(currentTaskPart);
+        }
     }
 
     #region PARTS
@@ -207,10 +251,20 @@ public class Workshop : MonoBehaviour
     {
         foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in currentTask.requiredParts)
         {
-            if (_PAIR.Key.partType != Vehicle_PartType.CHASSIS)
+            VehiclePart_Config _PART = _PAIR.Key;
+            int _QUANTITY = _PAIR.Value;
+            if (_PART.partType != Vehicle_PartType.CHASSIS)
             {
                 if (currentTask.requiredParts.ContainsKey(_PAIR.Key))
                 {
+                    if(factoryMode == FactoryMode.OOP){
+                        if (_chassis.partsFitted.ContainsKey(_PART))
+                        {
+                            if(_chassis.partsFitted[_PART] >= _QUANTITY){
+                                continue;
+                            }
+                        }
+                    }
                     L1.Request_part(new VehiclePartRequest(_PAIR.Key, REG));
                     REG.waitingForPartType = _chassis.partsNeeded[0].partConfig;
                     if (!purgingPartsToSharedStorage)
@@ -222,12 +276,10 @@ public class Workshop : MonoBehaviour
             }
         }
     }
-    public void Request_currentTask_part()
+    public void Request_currentTask_part(Storage _storage)
     {
-        REG.Change_state(StorageState.WAITING);
-
-        Debug.Log(workshopIndex + " L1 req: " + currentTaskPart);
-        L1.Request_part(new VehiclePartRequest(currentTaskPart, REG));
+        _storage.Change_state(StorageState.WAITING);
+        _storage.getsPartsFrom.Request_part(new VehiclePartRequest(currentTaskPart, _storage));
     }
 
 
@@ -252,18 +304,18 @@ public class Workshop : MonoBehaviour
             }
         }
     }
-  
+
     #endregion
     #region CHASSIS
 
-    public List<VehiclePart_CHASSIS> Get_chassis(Storage _storage, VehicleChassiRequest _request)
+    public List<VehiclePart_CHASSIS> Get_chassis(Storage _storage)
     {
         List<VehiclePart_CHASSIS> _result = new List<VehiclePart_CHASSIS>();
         // Iterate through LINES
 
         for (int _slotIndex = 0; _slotIndex < _storage.lineLength; _slotIndex++)
         {
-            if (_storage.Is_chassis_viable(0, _slotIndex, _request))
+            if (_storage.Is_chassis_viable(0, _slotIndex, CurrentChassisRequest))
             {
                 _result.Add(_storage.storageLines[0].slots[_slotIndex] as VehiclePart_CHASSIS);
             }
@@ -303,10 +355,7 @@ public class Workshop : MonoBehaviour
         purgingPartsToSharedStorage = false;
         Debug.Log("CANCEL PURGE: " + workshopIndex);
         Factory.INSTANCE.L3.Change_state(StorageState.IDLE);
-        L2.Change_state(StorageState.IDLE);
-        L1.Change_state(StorageState.IDLE);
-        REG.Change_state(StorageState.IDLE);
-
+        Clear_all_requests_then_idle();
     }
     public void Clear_all_requests_then_idle()
     {
@@ -321,7 +370,6 @@ public class Workshop : MonoBehaviour
 
     public void Do_purge()
     {
-
         if (REG.usedSpace > 0)
         {
             REG.Dump_line();
@@ -346,6 +394,13 @@ public class Workshop : MonoBehaviour
                 }
             }
         }
+        if (REG.currentState == StorageState.IDLE &&
+                   L1.currentState == StorageState.IDLE &&
+                   L2.currentState == StorageState.IDLE
+                 )
+        {
+            Cancel_purge();
+        }
     }
     #endregion
     #region GIZMOS
@@ -360,6 +415,9 @@ public class Workshop : MonoBehaviour
                 {
                     myName += " >> " + currentTask.requiredParts.First().Key.partType;
                 }
+            }
+            if(purgingPartsToSharedStorage){
+                myName += "\n PURGING";
             }
             GizmoHelpers.DrawRect(Color.cyan, transform.position, width, height, myName);
         }

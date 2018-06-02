@@ -244,12 +244,18 @@ public class Factory : SerializedMonoBehaviour
                 workshopTasks.Remove(_workshop.currentTask);
                 if (workshopTasks.Count > 0)
                 {
-                    _workshop.Set_current_task(workshopTasks[0]);
+                    WorkshopTask _NEXT_TASK = Get_inactive_workshop_task();
+                        if (_NEXT_TASK != null)
+                    {
+                        _workshop.Set_current_task(_NEXT_TASK);
+                    }else{
+                        _workshop.gameObject.active = false;
+                    }
                     Debug.Log(_workshop.workshopIndex + " TASK COMPLETE: " + _part + ",   new task: " + _workshop.currentTask.requiredParts.First().Key);
+
                 }
             }
         }
-
     }
 
     public void VehicleComplete(VehiclePart_CHASSIS _chassis)
@@ -290,7 +296,6 @@ public class Factory : SerializedMonoBehaviour
 
     public void ALERT_WorkshopPartUnavailable(VehiclePart_Config _part)
     {
-        Debug.Log("PART SHORTAGE: " + _part);
         L3.Clear_all_requests();
         RAM.Clear_all_requests();
         HD.Clear_all_requests();
@@ -299,22 +304,43 @@ public class Factory : SerializedMonoBehaviour
         RAM.Change_state(StorageState.IDLE);
         HD.Change_state(StorageState.IDLE);
 
-        Workshop _purgeMe = null;
-        int _leastUsedSpace = 999999;
-        foreach (Workshop _WORKSHOP in workshops)
+        if (factoryMode == FactoryMode.OOP)
         {
-            if (_WORKSHOP.usedSpace > 0 && _WORKSHOP.usedSpace < _leastUsedSpace)
+            Workshop _purgeMe = null;
+            int _leastUsedSpace = 999999;
+            foreach (Workshop _WORKSHOP in workshops)
             {
-                _purgeMe = _WORKSHOP;
-                _leastUsedSpace = _WORKSHOP.usedSpace;
-                _WORKSHOP.Clear_all_requests_then_idle();
+                if (_WORKSHOP.usedSpace > 0 && _WORKSHOP.usedSpace < _leastUsedSpace)
+                {
+                    _purgeMe = _WORKSHOP;
+                    _leastUsedSpace = _WORKSHOP.usedSpace;
+                    _WORKSHOP.Clear_all_requests_then_idle();
+                }
+            }
+
+            if (_purgeMe != null)
+            {
+                Debug.Log("PART SHORTAGE: " + _part);
+                _purgeMe.Purge_parts_to_shared_storage();
             }
         }
-
-        if (_purgeMe != null)
+    }
+    WorkshopTask Get_inactive_workshop_task(){
+        foreach (var _TASK in workshopTasks)
         {
-            _purgeMe.Purge_parts_to_shared_storage();
+            bool clashFound = false;
+            foreach (var _WORKSHOP in workshops)
+            {
+                if(_WORKSHOP.currentTask == _TASK){
+                    clashFound = true;
+                    break;
+                }
+            }
+            if(!clashFound){
+                return _TASK;
+            }
         }
+        return null;
     }
 
     #region ------------------------- < MOVE PARTS BETWEEN STORAGE
