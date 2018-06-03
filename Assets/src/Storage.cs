@@ -235,7 +235,7 @@ public class Storage : MonoBehaviour
         return false;
     }
 
-   
+
 
     #endregion State / Update >
     #region < Send / Recieve
@@ -304,7 +304,7 @@ public class Storage : MonoBehaviour
                 {
                     if (_SLOTS[_slotIndex].partConfig == _request.part)
                     {
-                        Set_outgoing_parts(_lineIndex);
+                        Set_outgoing_parts(_lineIndex, sendingLineTo);
                         Change_state(StorageState.FETCHING);
                         return;
                     }
@@ -336,7 +336,7 @@ public class Storage : MonoBehaviour
             {
                 if (Is_chassis_viable(_lineIndex, _slotIndex, _request))
                 {
-                    Set_outgoing_parts(_lineIndex);
+                    Set_outgoing_parts(_lineIndex, sendingLineTo);
                     Change_state(StorageState.FETCHING);
                     return;
                 }
@@ -386,7 +386,7 @@ public class Storage : MonoBehaviour
 
     }
 
-    private void Set_outgoing_parts(int _lineIndex)
+    private void Set_outgoing_parts(int _lineIndex, Storage _sendTo)
     {
         List<VehiclePart> _partsToSend = new List<VehiclePart>();
         var _LINE = storageLines[_lineIndex];
@@ -398,10 +398,13 @@ public class Storage : MonoBehaviour
             }
         }
 
-        Set_outgoing_parts(_lineIndex, _partsToSend.ToArray());
+        Set_outgoing_parts(_lineIndex, _partsToSend.ToArray(), _sendTo);
     }
-    private void Set_outgoing_parts(int _lineIndex, VehiclePart[] _parts){
+    private void Set_outgoing_parts(int _lineIndex, VehiclePart[] _parts, Storage _sendTo)
+    {
+
         fetchLine_pos_START = storageLines[_lineIndex].slotPositions[0];
+        fetchLine_pos_END = _sendTo.transform.position + PART_ARRIVAL_OFFSET;
         parts_OUT = _parts;
     }
 
@@ -494,10 +497,8 @@ public class Storage : MonoBehaviour
                 else
                 {
                     // no room available - ditch line zero
-                    Set_outgoing_parts(0);
-
                     sendingLineTo = getsPartsFrom;
-                    fetchLine_pos_END = sendingLineTo.transform.position + PART_ARRIVAL_OFFSET;
+                    Set_outgoing_parts(0, sendingLineTo);
                     Change_state(StorageState.FETCHING);
                 }
                 return stored;
@@ -523,22 +524,29 @@ public class Storage : MonoBehaviour
                 {
                     for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
                     {
-                        if (_SENT_PARTS.Contains(storageLines[_lineIndex].slots[_slotIndex]))
+                        VehiclePart _SLOT = Get_data_slot(_lineIndex, _slotIndex);
+                        if (_SLOT != null)
                         {
-                            _SENT_PARTS.Remove(storageLines[_lineIndex].slots[_slotIndex]);
-                            Clear_slot(_lineIndex, _slotIndex);
+                            if (_SENT_PARTS.Contains(storageLines[_lineIndex].slots[_slotIndex]))
+                            {
+                                _SENT_PARTS.Remove(storageLines[_lineIndex].slots[_slotIndex]);
+                                Clear_slot(_lineIndex, _slotIndex);
+                            }else{
+                                Position_part_in_storage(_SLOT.transform, _lineIndex, _slotIndex);
+                            }
                         }
                     }
                 }
             }
-            if (!_dumpingParts)
-            {
-                current_PART_request = null;
-                current_CHASSIS_request = null;
-            }
-            Change_state(StorageState.IDLE);
         }
+        if (!_dumpingParts)
+        {
+            current_PART_request = null;
+            current_CHASSIS_request = null;
+        }
+        Change_state(StorageState.IDLE);
     }
+
 
     public void Await_purged_data()
     {
@@ -648,7 +656,7 @@ public class Storage : MonoBehaviour
     {
         if (parts_OUT != null)
         {
-            if (currentState == StorageState.FETCHING && factor !=1)
+            if (factor != 1)
             {
                 for (int _partIndex = 0; _partIndex < parts_OUT.Length; _partIndex++)
                 {
@@ -683,7 +691,7 @@ public class Storage : MonoBehaviour
                 }
             }
             sendingLineTo = getsPartsFrom;
-            Set_outgoing_parts(_lineIndex, dumpList.ToArray());
+            Set_outgoing_parts(_lineIndex, dumpList.ToArray(), sendingLineTo);
         }
     }
     public void Dump_first_line_with_data()
@@ -733,7 +741,7 @@ public class Storage : MonoBehaviour
                 }
             }
             sendingLineTo = getsPartsFrom;
-            Set_outgoing_parts(_lineIndex, dumpList.ToArray());
+            Set_outgoing_parts(_lineIndex, dumpList.ToArray(), sendingLineTo);
         }
     }
 
@@ -754,7 +762,7 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                Set_outgoing_parts(_lineIndex, dumpList.ToArray());
+                Set_outgoing_parts(_lineIndex, dumpList.ToArray(), sendingLineTo);
             }
             else
             {
@@ -790,7 +798,7 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                Set_outgoing_parts(targetLine, dumpList.ToArray());
+                Set_outgoing_parts(targetLine, dumpList.ToArray(),sendingLineTo);
             }
         }
     }
@@ -822,7 +830,7 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                Set_outgoing_parts(targetLine, dumpList.ToArray());
+                Set_outgoing_parts(targetLine, dumpList.ToArray(),sendingLineTo);
             }
         }
     }
