@@ -22,6 +22,14 @@ public class Factory : SerializedMonoBehaviour
     [PropertyRange(0.05f, 1f)] public float storageCellSize;
     private float t;
 
+    [Header("Storage Times")]
+    public int speed_REG = 1;
+    public int speed_L1 = 5;
+    public int speed_L2 = 15;
+    public int speed_L3 = 35;
+    public int speed_RAM = 105;
+    public int speed_HD = 315;
+
     public Storage HD, RAM, L3;
     private Storage[] storage;
     [HideInInspector] public List<Workshop> workshops;
@@ -61,7 +69,18 @@ public class Factory : SerializedMonoBehaviour
 
     private void Start()
     {
-        // set up SHARED STORAGE statics (L3)
+        // set up storage times
+
+        foreach (var _WORKSHOP in workshops)
+        {
+            _WORKSHOP.REG.taskDuration = speed_REG;
+            _WORKSHOP.L1.taskDuration = speed_L2;
+            _WORKSHOP.L2.taskDuration = speed_L2;
+        }
+        L3.taskDuration = speed_L3;
+        RAM.taskDuration = speed_RAM;
+        HD.taskDuration = speed_HD;
+
         SHARED_STORAGE_CAPACITY = L3.capacity;
         SHARED_STORAGE_CORE_SHARE = SHARED_STORAGE_CAPACITY / workshops.Count;
         Debug.Log("WORKSHOPS GET [" + SHARED_STORAGE_CORE_SHARE + "] of [" + SHARED_STORAGE_CAPACITY + "]");

@@ -170,6 +170,7 @@ MonoBehaviour:
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: 114b0d887b68343bf839eac40ad489fd, type: 2}
     - {fileID: 11400000, guid: 7cb9a81b233954f3390e36e55b3c8211, type: 2}
+    - {fileID: 11400000, guid: 8bff78a5d215e4a83924e6853bbcb350, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -188,7 +189,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 3
     - Name: 
       Entry: 7
       Data: 
@@ -197,7 +198,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 3
-      Data: 20
+      Data: 10
     - Name: 
       Entry: 8
       Data: 
@@ -209,7 +210,19 @@ MonoBehaviour:
       Data: 1
     - Name: 
       Entry: 3
-      Data: 20
+      Data: 10
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: 
+      Entry: 10
+      Data: 2
+    - Name: 
+      Entry: 3
+      Data: 30
     - Name: 
       Entry: 8
       Data: 
@@ -225,10 +238,16 @@ MonoBehaviour:
     - Name: CompletedVehicles
       Entry: 6
       Data: 
-  factoryMode: 0
+  factoryMode: 1
   PartsDeliveredTo: {fileID: 398428904}
   tickRate: 0.00001
   storageCellSize: 0.45
+  speed_REG: 1
+  speed_L1: 3
+  speed_L2: 3
+  speed_L3: 3
+  speed_RAM: 3
+  speed_HD: 3
   HD: {fileID: 398428904}
   RAM: {fileID: 268225004}
   L3: {fileID: 991516663}
@@ -848,7 +867,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 0, g: 0, b: 0, a: 1}
   isLastInChain: 0
-  taskDuration: 4
+  taskDuration: 50
   linesX: 16
   linesY: 2
   linesZ: 10
@@ -864,7 +883,6 @@ MonoBehaviour:
   clusterCapacity: 32
   taskStep: 0
   currentState: 0
-  storageLocations: []
   aisleSpaces: []
   factor: 0
   parts_IN: []
@@ -993,7 +1011,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 0.0788092, g: 0.52990025, b: 0.7264151, a: 1}
   isLastInChain: 1
-  taskDuration: 4
+  taskDuration: 100
   linesX: 16
   linesY: 16
   linesZ: 16
@@ -1009,7 +1027,6 @@ MonoBehaviour:
   clusterCapacity: 32
   taskStep: 0
   currentState: 0
-  storageLocations: []
   aisleSpaces: []
   factor: 0
   parts_IN: []
@@ -1772,7 +1789,7 @@ MonoBehaviour:
   sendingLineTo: {fileID: 0}
   colour: {r: 1, g: 0.11792451, b: 0.11792451, a: 1}
   isLastInChain: 0
-  taskDuration: 4
+  taskDuration: 20
   linesX: 16
   linesY: 1
   linesZ: 14
@@ -1788,7 +1805,6 @@ MonoBehaviour:
   clusterCapacity: 32
   taskStep: 0
   currentState: 0
-  storageLocations: []
   aisleSpaces: []
   factor: 0
   parts_IN: []

@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03a54d1c4a5bf4a959525e7206bdbc0a, type: 3}
-  m_Name: VehiclePart_GLASS
+  m_Name: VehiclePart_GLASS_LARGE
   m_EditorClassIdentifier: 
   prefab_part: {fileID: 1171907053976004, guid: caa152c17e88d4cf4bc1962b0edda49e,
     type: 2}

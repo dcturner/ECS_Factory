@@ -14,6 +14,8 @@ public class Storage : MonoBehaviour
 
     #region < FIELDS
     public static bool GIZMOS_DRAW_CELLS = false;
+    public static Vector3 PART_ARRIVAL_OFFSET = new Vector3(-2, 0, 0);
+    public static float PART_TRANSIT_SPACING = 0.02f;
 
     public string storageName;
     public Storage getsPartsFrom;
@@ -42,7 +44,6 @@ public class Storage : MonoBehaviour
     [ReadOnly] public int usedSpace, freeSpace, capacity, clusterCapacity, taskStep;
     [HideInInspector] public StorageState currentState;
 
-    [HideInInspector] public List<Vector3> storageLocations;
     [HideInInspector] public List<Vector3> aisleSpaces;
     [HideInInspector] public float factor;
     [HideInInspector] public List<StorageLine> storageLines;
@@ -54,6 +55,10 @@ public class Storage : MonoBehaviour
 
     // Storage GRID layout
     private int cellsX, cellsY, cellsZ;
+
+    // Movement of parts
+    private Vector3 fetchLine_pos_START, fetchLine_pos_END;
+
     #endregion FIELDS >
     #region < INIT
     public void Init()
@@ -68,7 +73,6 @@ public class Storage : MonoBehaviour
 
     private void DefineStorageLayout()
     {
-        storageLocations = new List<Vector3>();
         storageLines = new List<StorageLine>();
         aisleSpaces = new List<Vector3>();
         Vector3 _POS = transform.position;
@@ -167,6 +171,7 @@ public class Storage : MonoBehaviour
                 }
                 else
                 {
+                    Update_part_positions();
                     taskStep++;
                 }
 
@@ -230,6 +235,8 @@ public class Storage : MonoBehaviour
         return false;
     }
 
+   
+
     #endregion State / Update >
     #region < Send / Recieve
 
@@ -285,6 +292,7 @@ public class Storage : MonoBehaviour
     private void Do_part_request(VehiclePartRequest _request)
     {
         sendingLineTo = _request.deliverTo;
+        fetchLine_pos_END = sendingLineTo.transform.position + PART_ARRIVAL_OFFSET;
         current_PART_request = _request;
         for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
         {
@@ -319,6 +327,7 @@ public class Storage : MonoBehaviour
     private void Do_chassis_request(VehicleChassiRequest _request)
     {
         sendingLineTo = _request.deliverTo;
+        fetchLine_pos_END = sendingLineTo.transform.position + PART_ARRIVAL_OFFSET;
         current_CHASSIS_request = _request;
         // for StorageLines
         for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
@@ -388,7 +397,12 @@ public class Storage : MonoBehaviour
                 _partsToSend.Add(_LINE.slots[_slotIndex]);
             }
         }
-        parts_OUT = _partsToSend.ToArray();
+
+        Set_outgoing_parts(_lineIndex, _partsToSend.ToArray());
+    }
+    private void Set_outgoing_parts(int _lineIndex, VehiclePart[] _parts){
+        fetchLine_pos_START = storageLines[_lineIndex].slotPositions[0];
+        parts_OUT = _parts;
     }
 
     public bool Is_chassis_viable(int _lineIndex, int _slotIndex, VehicleChassiRequest _request)
@@ -417,19 +431,22 @@ public class Storage : MonoBehaviour
                 foreach (KeyValuePair<VehiclePart_Config, int> _PAIR in _request.requiredParts)
                 {
                     VehiclePart_Config _REQ_PART = _PAIR.Key;
-                    int _QUANTITY = _CHASSIS.design.quantities[_REQ_PART];
-                    if (_REQ_PART.partType != Vehicle_PartType.CHASSIS)
+                    if (_CHASSIS.design.quantities.ContainsKey(_REQ_PART))
                     {
-                        if (_CHASSIS.partsFitted.ContainsKey(_REQ_PART))
+                        int _QUANTITY = _CHASSIS.design.quantities[_REQ_PART];
+                        if (_REQ_PART.partType != Vehicle_PartType.CHASSIS)
                         {
-                            if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
+                            if (_CHASSIS.partsFitted.ContainsKey(_REQ_PART))
+                            {
+                                if (_CHASSIS.partsFitted[_REQ_PART] < _QUANTITY)
+                                {
+                                    return true;
+                                }
+                            }
+                            else
                             {
                                 return true;
                             }
-                        }
-                        else
-                        {
-                            return true;
                         }
                     }
                 }
@@ -480,6 +497,7 @@ public class Storage : MonoBehaviour
                     Set_outgoing_parts(0);
 
                     sendingLineTo = getsPartsFrom;
+                    fetchLine_pos_END = sendingLineTo.transform.position + PART_ARRIVAL_OFFSET;
                     Change_state(StorageState.FETCHING);
                 }
                 return stored;
@@ -626,6 +644,21 @@ public class Storage : MonoBehaviour
     }
     #endregion Slot Management >
 
+    private void Update_part_positions()
+    {
+        if (parts_OUT != null)
+        {
+            if (currentState == StorageState.FETCHING && factor !=1)
+            {
+                for (int _partIndex = 0; _partIndex < parts_OUT.Length; _partIndex++)
+                {
+                    VehiclePart _PART = parts_OUT[_partIndex];
+                    _PART.transform.position = Vector3.Lerp(fetchLine_pos_START, fetchLine_pos_END, factor + (_partIndex * PART_TRANSIT_SPACING));
+                }
+            }
+        }
+    }
+
     private void Position_part_in_storage(Transform _partTransform, int _lineIndex, int _slotIndex)
     {
         _partTransform.position = storageLines[_lineIndex].slotPositions[_slotIndex];
@@ -650,7 +683,7 @@ public class Storage : MonoBehaviour
                 }
             }
             sendingLineTo = getsPartsFrom;
-            parts_OUT = dumpList.ToArray();
+            Set_outgoing_parts(_lineIndex, dumpList.ToArray());
         }
     }
     public void Dump_first_line_with_data()
@@ -700,7 +733,7 @@ public class Storage : MonoBehaviour
                 }
             }
             sendingLineTo = getsPartsFrom;
-            parts_OUT = dumpList.ToArray();
+            Set_outgoing_parts(_lineIndex, dumpList.ToArray());
         }
     }
 
@@ -721,7 +754,7 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                parts_OUT = dumpList.ToArray();
+                Set_outgoing_parts(_lineIndex, dumpList.ToArray());
             }
             else
             {
@@ -734,6 +767,7 @@ public class Storage : MonoBehaviour
         if (getsPartsFrom.currentState != StorageState.FETCHING)
         {
             bool foundOnLine = false;
+            int targetLine = -1;
             List<VehiclePart> dumpList = new List<VehiclePart>();
             for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
             {
@@ -745,6 +779,7 @@ public class Storage : MonoBehaviour
                         if (!Is_chassis_viable(_lineIndex, _slotIndex, _request))
                         {
                             dumpList.Add(_SLOT);
+                            targetLine = _lineIndex;
                             foundOnLine = true;
                         }
                     }
@@ -755,7 +790,7 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                parts_OUT = dumpList.ToArray();
+                Set_outgoing_parts(targetLine, dumpList.ToArray());
             }
         }
     }
@@ -764,6 +799,7 @@ public class Storage : MonoBehaviour
         if (getsPartsFrom.currentState != StorageState.FETCHING)
         {
             bool foundOnLine = false;
+            int targetLine = -1;
             List<VehiclePart> dumpList = new List<VehiclePart>();
             for (int _lineIndex = 0; _lineIndex < storageLines.Count; _lineIndex++)
             {
@@ -775,6 +811,7 @@ public class Storage : MonoBehaviour
                         if (_SLOT.partConfig != _targetPart && _SLOT.partConfig.partType != Vehicle_PartType.CHASSIS)
                         {
                             dumpList.Add(_SLOT);
+                            targetLine = _lineIndex;
                             foundOnLine = true;
                         }
                     }
@@ -785,7 +822,7 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                parts_OUT = dumpList.ToArray();
+                Set_outgoing_parts(targetLine, dumpList.ToArray());
             }
         }
     }
@@ -818,35 +855,6 @@ public class Storage : MonoBehaviour
         {
             Vector3 cell_drawSize = Vector3.one
                                     * cellSize;
-            if (storageLocations.Count == 0)
-            {
-                for (int stackY = 0; stackY < linesY; stackY++)
-                {
-                    for (int stackZ = 0; stackZ < linesZ; stackZ++)
-                    {
-                        for (int lineX = 0; lineX < linesX; lineX++)
-                        {
-                            for (int slotIndex = 0; slotIndex < lineLength; slotIndex++)
-                            {
-                                Vector3 _LINE_POS = _POS + new Vector3(lineLength * lineX + (lineX * gutterX),
-                                                        stackY + (stackY * gutterY),
-                                                        stackZ + (stackZ * gutterZ)) * cellSize;
-                                Gizmos_DrawCell(_LINE_POS + new Vector3(slotIndex * cellSize, 0f, 0f),
-                                    cell_drawSize);
-                            }
-                        }
-                    }
-                }
-            }
-
-            else
-            {
-                Gizmos.color = Color.grey;
-                foreach (Vector3 _STORAGE_LOCATION in storageLocations)
-                {
-                    Gizmos_DrawCell(_STORAGE_LOCATION, cell_drawSize);
-                }
-            }
 
             clusterCapacity = lineLength * lines_groupBy_Y * lines_groupBy_Z;
             capacity = clusterCapacity * (linesX * linesY * linesZ);

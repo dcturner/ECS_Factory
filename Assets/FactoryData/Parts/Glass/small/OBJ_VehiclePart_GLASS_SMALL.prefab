@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4783408971031332}
   - component: {fileID: 114352897718165114}
   m_Layer: 0
-  m_Name: OBJ_VehiclePart_GLASS
+  m_Name: OBJ_VehiclePart_GLASS_SMALL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66,8 +66,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1835578861367492}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.05, z: 0}
-  m_LocalScale: {x: 0.27559912, y: 0.10250615, z: 0.008099509}
+  m_LocalPosition: {x: 0, y: 0.1046, z: 0.032}
+  m_LocalScale: {x: 0.070196725, y: 0.08580133, z: 0.0049979994}
   m_Children: []
   m_Father: {fileID: 4783408971031332}
   m_RootOrder: 0
@@ -140,3 +140,4 @@ MonoBehaviour:
   partConfig: {fileID: 11400000, guid: 2be31d18e7bdd415fa10c981e1787317, type: 2}
   age: 0
   id: 0
+  temp_score: 0

@@ -18,16 +18,31 @@ public class VehicleDesign : ScriptableObject
 
     private void OnValidate()
     {
+        Vector3 ChassisOffset = Vector3.zero;
         quantities = new Dictionary<VehiclePart_Config, int>();
         if (designPrefab != null)
         {
             designName = designPrefab.name;
             requiredParts = new List<VehiclePart_Assignment>();
+
+            foreach (VehiclePart _PART in designPrefab.GetComponentsInChildren<VehiclePart>())
+            {
+                if (_PART.partConfig.partType == Vehicle_PartType.CHASSIS)
+                {
+                    ChassisOffset = _PART.transform.localPosition;
+                    break;
+                }
+            }
+
             foreach (VehiclePart _PART in designPrefab.GetComponentsInChildren<VehiclePart>())
             {
                 VehiclePart_Config _CONFIG = _PART.partConfig;
-                VehiclePart_Assignment _temp = new VehiclePart_Assignment(_PART.name, _CONFIG,
-                    _PART.transform.localPosition, _PART.transform.localRotation);
+                Vector3 storedPos = (_CONFIG.partType == Vehicle_PartType.CHASSIS) ? _PART.transform.localPosition : _PART.transform.localPosition - ChassisOffset;
+                VehiclePart_Assignment _temp = new VehiclePart_Assignment(
+                    _PART.name,
+                    _CONFIG,storedPos,
+                    _PART.transform.localRotation);
+                
                 requiredParts.Add(_temp);
                 if (quantities.ContainsKey(_CONFIG))
                 {
@@ -38,6 +53,7 @@ public class VehicleDesign : ScriptableObject
                     quantities.Add(_CONFIG, 1);
                 }
             }
+
         }
     }
 
