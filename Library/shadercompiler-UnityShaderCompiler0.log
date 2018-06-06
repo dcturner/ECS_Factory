@@ -1,69 +1,11 @@
 Base path: /Applications/Unity/Hub/Editor/2018.1.0b13/Unity.app/Contents
 Cmd: initializeCompiler
 Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess
   insize=1713 outsize=258 ok=1
 Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess
@@ -89,6 +31,28 @@ Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess
   insize=1713 outsize=258 ok=1
+Cmd: compileSnippet
+  api=14 type=0 insize=1426 outsize=3447 kw=UNITY_PASS_FORWARDADD POINT pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: compileSnippet
+  api=14 type=1 insize=1426 outsize=7546 kw=UNITY_PASS_FORWARDADD POINT pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: compileSnippet
+  api=14 type=0 insize=1278 outsize=2766 kw=UNITY_PASS_SHADOWCASTER SHADOWS_CUBE pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: compileSnippet
+  api=14 type=1 insize=1278 outsize=535 kw=UNITY_PASS_SHADOWCASTER SHADOWS_CUBE pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: compileSnippet
+  api=14 type=0 insize=1426 outsize=3541 kw=UNITY_PASS_FORWARDADD POINT SHADOWS_CUBE pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: compileSnippet
+  api=14 type=1 insize=1426 outsize=9555 kw=UNITY_PASS_FORWARDADD POINT SHADOWS_CUBE pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: compileSnippet
+  api=14 type=0 insize=1895 outsize=1665 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: compileSnippet
+  api=14 type=1 insize=1895 outsize=951 kw= pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
 Cmd: initializeCompiler
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
@@ -108,6 +72,40 @@ Cmd: preprocess
 Cmd: preprocess
   insize=1713 outsize=258 ok=1
 Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess
@@ -149,38 +147,6 @@ Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess
   insize=1713 outsize=258 ok=1
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
-Cmd: initializeCompiler
-Cmd: initializeCompiler
-Cmd: preprocess
-  insize=1516 outsize=295 ok=1
-Cmd: preprocess
-  insize=1713 outsize=258 ok=1
 Cmd: initializeCompiler
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
@@ -209,6 +175,61 @@ Cmd: preprocess
 Cmd: preprocess
   insize=1713 outsize=258 ok=1
 Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess
@@ -223,11 +244,41 @@ Cmd: preprocess
 Cmd: preprocess
   insize=1713 outsize=258 ok=1
 Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess
   insize=1713 outsize=258 ok=1
 Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
+Cmd: initializeCompiler
+Cmd: preprocess
+  insize=1516 outsize=295 ok=1
+Cmd: preprocess
+  insize=1713 outsize=258 ok=1
 Cmd: preprocess
   insize=1516 outsize=295 ok=1
 Cmd: preprocess

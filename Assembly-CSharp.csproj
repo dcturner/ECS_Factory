@@ -64,6 +64,7 @@
     <Compile Include="Assets\src\Helpers\Timer.cs" />
     <Compile Include="Assets\src\Helpers\VehiclePart_List.cs" />
     <Compile Include="Assets\src\Storage.cs" />
+    <Compile Include="Assets\src\StorageBot.cs" />
     <Compile Include="Assets\src\Vehicles\VehicleDesign.cs" />
     <Compile Include="Assets\src\Vehicles\VehiclePart.cs" />
     <Compile Include="Assets\src\Vehicles\VehiclePart_CHASSIS.cs" />

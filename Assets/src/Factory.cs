@@ -17,6 +17,7 @@ public class Factory : SerializedMonoBehaviour
     public static Factory INSTANCE;
     public FactoryMode factoryMode;
     public Storage PartsDeliveredTo;
+    public GameObject PREFAB_StorageBot;
     private int tick = 0;
     [PropertyRange(0.00000001f, 1f)] public float tickRate = 0.1f;
     [PropertyRange(0.05f, 1f)] public float storageCellSize;

@@ -9,19 +9,19 @@ using UnityEngine.AI;
 
 public class Workshop : MonoBehaviour
 {
-    public FactoryMode factoryMode;
+    [HideInInspector] public FactoryMode factoryMode;
     public int workshopIndex;
     public float width, height;
     public Storage L2, L1, REG;
-    public int freeSpace, usedSpace, completedVehicles;
+    [ReadOnly]public int freeSpace, usedSpace, completedVehicles;
 
     private Queue<WorkshopTask> tasklist;
-    public WorkshopTask currentTask = null;
-    public VehiclePart_Config currentTaskPart;
-    public List<VehiclePart_CHASSIS> REG_viableChassis;
-    public List<VehiclePart_CHASSIS> workshop_viableChassis;
+    [HideInInspector] public WorkshopTask currentTask = null;
+    [HideInInspector] public VehiclePart_Config currentTaskPart;
+    [HideInInspector] public List<VehiclePart_CHASSIS> REG_viableChassis;
+    [HideInInspector]public List<VehiclePart_CHASSIS> workshop_viableChassis;
     private VehicleChassiRequest CurrentChassisRequest;
-    public List<VehiclePart> REG_viableParts;
+    [HideInInspector] public List<VehiclePart> REG_viableParts;
     public bool purgingPartsToSharedStorage = false;
 
     private void Awake()
@@ -295,6 +295,7 @@ public class Workshop : MonoBehaviour
                 {
                     if (REG_viableChassis[_chassisIndex].AttachPart(_PART.partConfig, _PART.gameObject))
                     {
+                        _PART.ClearDestination();
                         REG_viableParts.Remove(_PART);
                         Factory.INSTANCE.PartAttached(_PART.partConfig, this);
                         REG.Clear_slot(0, _slotIndex);
@@ -406,21 +407,21 @@ public class Workshop : MonoBehaviour
     #region GIZMOS
     private void OnDrawGizmos()
     {
-        if (L2 && L1 && REG)
-        {
-            string myName = "CORE [" + workshopIndex + "]";
-            if (factoryMode == FactoryMode.DOD)
-            {
-                if (currentTask != null)
-                {
-                    myName += " >> " + currentTask.requiredParts.First().Key.partType;
-                }
-            }
-            if(purgingPartsToSharedStorage){
-                myName += "\n PURGING";
-            }
-            GizmoHelpers.DrawRect(Color.cyan, transform.position, width, height, myName);
-        }
+        //if (L2 && L1 && REG)
+        //{
+        //    string myName = "CORE [" + workshopIndex + "]";
+        //    if (factoryMode == FactoryMode.DOD)
+        //    {
+        //        if (currentTask != null)
+        //        {
+        //            myName += " >> " + currentTask.requiredParts.First().Key.partType;
+        //        }
+        //    }
+        //    if(purgingPartsToSharedStorage){
+        //        myName += "\n PURGING";
+        //    }
+        //    GizmoHelpers.DrawRect(Color.cyan, transform.position, width, height, myName);
+        //}
     }
     #endregion
 }

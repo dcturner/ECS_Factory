@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +16,19 @@ public class Storage : MonoBehaviour
     public static bool GIZMOS_DRAW_CELLS = false;
     public static Vector3 PART_ARRIVAL_OFFSET = new Vector3(-2, 0, 0);
     public static float PART_TRANSIT_SPACING = 0.02f;
+    // animation settings
+    public static float ANIM_RANGE_FETCH = 0.35f;
+    public static float ANIM_RANGE_LOAD = 0.45f;
+    public static float ANIM_RANGE_DELIVER = 0.8f;
 
     public string storageName;
+    public Transform nav_parts_IN, nav_parts_OUT;
     public Storage getsPartsFrom;
     public Storage sendingLineTo;
     public Color colour;
     public bool isLastInChain = false;
+    public bool isRegister = false;
+    public StorageBot storageBot;
 
     [PropertyRange(1, 1000)] public int taskDuration;
 
@@ -48,7 +55,6 @@ public class Storage : MonoBehaviour
     [HideInInspector] public float factor;
     [HideInInspector] public List<StorageLine> storageLines;
     [HideInInspector] public VehiclePart[] parts_IN, parts_OUT;
-    [HideInInspector] public StorageLine pendingLineSend;
     [HideInInspector] public VehiclePartRequest current_PART_request, next_PART_request;
     [HideInInspector] public VehicleChassiRequest current_CHASSIS_request, next_CHASSIS_request;
     [HideInInspector] public VehiclePart_Config waitingForPartType;
@@ -57,6 +63,7 @@ public class Storage : MonoBehaviour
     private int cellsX, cellsY, cellsZ;
 
     // Movement of parts
+    private int targetStorageLine;
     private Vector3 fetchLine_pos_START, fetchLine_pos_END;
 
     #endregion FIELDS >
@@ -64,6 +71,10 @@ public class Storage : MonoBehaviour
     public void Init()
     {
         DefineStorageLayout();
+        if (!isRegister)
+        {
+            CreateStorageBot();
+        }
     }
 
     private string Log()
@@ -98,6 +109,13 @@ public class Storage : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void CreateStorageBot()
+    {
+        GameObject bot_OBJ = (GameObject)Instantiate(Factory.INSTANCE.PREFAB_StorageBot, nav_parts_OUT.position, transform.rotation);
+        storageBot = bot_OBJ.GetComponent<StorageBot>();
+        storageBot.Init(this);
     }
 
     void AddStorageLine(int _index, Vector3 _pos)
@@ -156,6 +174,9 @@ public class Storage : MonoBehaviour
         {
             Redo_request_if_required();
         }
+        if(!isRegister){
+            storageBot.Destination = nav_parts_IN.position;
+        }
         switch (currentState)
         {
             case StorageState.IDLE:
@@ -171,10 +192,12 @@ public class Storage : MonoBehaviour
                 }
                 else
                 {
-                    Update_part_positions();
+                    if (!isRegister)
+                    {
+                        UpdateBot();
+                    }
                     taskStep++;
                 }
-
                 break;
         }
 
@@ -402,8 +425,8 @@ public class Storage : MonoBehaviour
     }
     private void Set_outgoing_parts(int _lineIndex, VehiclePart[] _parts, Storage _sendTo)
     {
-
-        fetchLine_pos_START = storageLines[_lineIndex].slotPositions[0];
+        targetStorageLine = _lineIndex;
+        fetchLine_pos_START = storageLines[targetStorageLine].slotPositions[0];
         fetchLine_pos_END = _sendTo.transform.position + PART_ARRIVAL_OFFSET;
         parts_OUT = _parts;
     }
@@ -531,8 +554,10 @@ public class Storage : MonoBehaviour
                             {
                                 _SENT_PARTS.Remove(storageLines[_lineIndex].slots[_slotIndex]);
                                 Clear_slot(_lineIndex, _slotIndex);
-                            }else{
-                                Position_part_in_storage(_SLOT.transform, _lineIndex, _slotIndex);
+                            }
+                            else
+                            {
+                                Position_part_in_storage(_SLOT, _lineIndex, _slotIndex);
                             }
                         }
                     }
@@ -599,11 +624,11 @@ public class Storage : MonoBehaviour
 
                 for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
                 {
-                    if (_LINE.slots[_slotIndex] == null && _parts[_partIndex] != null)
+                    VehiclePart _PART = _parts[_partIndex];
+                    if (_LINE.slots[_slotIndex] == null && _PART != null)
                     {
-                        Assign_slot(_lineIndex, _slotIndex, _parts[_partIndex]);
+                        Assign_slot(_lineIndex, _slotIndex, _PART);
                         _STORED_PARTS.Add(_parts[_partIndex]);
-                        Position_part_in_storage(_parts[_partIndex].transform, _lineIndex, _slotIndex);
                         _partIndex++;
                     }
                     if (_partIndex >= _parts.Length)
@@ -626,6 +651,12 @@ public class Storage : MonoBehaviour
     public void Force_data_into_storage(VehiclePart[] _parts)
     {
         Attempt_store_new_data(_parts);
+        for (int _partIndex = 0; _partIndex < _parts.Length; _partIndex++)
+        {
+            VehiclePart _PART = _parts[_partIndex];
+            _PART.transform.position = _PART.destination;
+            _PART.ClearDestination();
+        }
     }
 
     public void Clear_slot(int _lineIndex, int _slotIndex)
@@ -645,6 +676,7 @@ public class Storage : MonoBehaviour
             if (storageLines[_lineIndex].slots[_slotIndex] == null)
             {
                 storageLines[_lineIndex].slots[_slotIndex] = _part;
+                Position_part_in_storage(_part, _lineIndex, _slotIndex);
                 freeSpace--;
                 usedSpace++;
             }
@@ -652,24 +684,9 @@ public class Storage : MonoBehaviour
     }
     #endregion Slot Management >
 
-    private void Update_part_positions()
+    private void Position_part_in_storage(VehiclePart _part, int _lineIndex, int _slotIndex)
     {
-        if (parts_OUT != null)
-        {
-            if (factor != 1)
-            {
-                for (int _partIndex = 0; _partIndex < parts_OUT.Length; _partIndex++)
-                {
-                    VehiclePart _PART = parts_OUT[_partIndex];
-                    _PART.transform.position = Vector3.Lerp(fetchLine_pos_START, fetchLine_pos_END, factor + (_partIndex * PART_TRANSIT_SPACING));
-                }
-            }
-        }
-    }
-
-    private void Position_part_in_storage(Transform _partTransform, int _lineIndex, int _slotIndex)
-    {
-        _partTransform.position = storageLines[_lineIndex].slotPositions[_slotIndex];
+        _part.SetDestination(storageLines[_lineIndex].slotPositions[_slotIndex]);
     }
 
     public void Dump_line(int _lineIndex = 0)
@@ -798,7 +815,7 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                Set_outgoing_parts(targetLine, dumpList.ToArray(),sendingLineTo);
+                Set_outgoing_parts(targetLine, dumpList.ToArray(), sendingLineTo);
             }
         }
     }
@@ -830,10 +847,79 @@ public class Storage : MonoBehaviour
             if (dumpList.Count > 0)
             {
                 Change_state(StorageState.DUMP);
-                Set_outgoing_parts(targetLine, dumpList.ToArray(),sendingLineTo);
+                Set_outgoing_parts(targetLine, dumpList.ToArray(), sendingLineTo);
             }
         }
     }
+
+    #region STORAGE BOT
+
+    private void UpdateBot()
+    {
+        Vector3 botDest;
+        if (factor < ANIM_RANGE_FETCH)
+        {
+            botDest = Vector3.Lerp(nav_parts_IN.position, fetchLine_pos_START, factor / ANIM_RANGE_FETCH);
+        }
+        else if (factor < ANIM_RANGE_LOAD)
+        {
+            botDest = fetchLine_pos_START;
+            // move parts to bot
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                VehiclePart _PART = Get_data_slot(targetStorageLine, _slotIndex);
+                if(_PART !=null){
+                    if(parts_OUT.Contains(_PART)){
+                        Vector3 _PART_START_POS = storageLines[targetStorageLine].slotPositions[_slotIndex];
+                        Vector3 _PART_END_POS = storageBot.slots[_slotIndex].position;
+                        _PART.ClearDestination();
+                        _PART.transform.position = Vector3.Lerp(_PART_START_POS, _PART_END_POS, (factor - ANIM_RANGE_FETCH) / (ANIM_RANGE_LOAD - ANIM_RANGE_FETCH));
+                    }
+                }
+            }
+        }
+        else if (factor < ANIM_RANGE_DELIVER)
+        {
+            botDest = Vector3.Lerp(fetchLine_pos_START, nav_parts_OUT.position, (factor - ANIM_RANGE_LOAD) / (ANIM_RANGE_DELIVER - ANIM_RANGE_LOAD));
+            // keep parts with bot
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                VehiclePart _PART = Get_data_slot(targetStorageLine, _slotIndex);
+                if (_PART != null)
+                {
+                    if (parts_OUT.Contains(_PART))
+                    {
+                        _PART.ClearDestination();
+                        _PART.transform.position  = storageBot.slots[_slotIndex].position;
+                    }
+                }
+            }
+        }
+        else
+        {
+            botDest = nav_parts_OUT.position;
+            // stack parts
+            for (int _slotIndex = 0; _slotIndex < lineLength; _slotIndex++)
+            {
+                VehiclePart _PART = Get_data_slot(targetStorageLine, _slotIndex);
+                if (_PART != null)
+                {
+                    if (parts_OUT.Contains(_PART))
+                    {
+                        Vector3 _PART_START_POS = storageBot.slots[_slotIndex].position;
+                        Vector3 _PART_END_POS = sendingLineTo.nav_parts_IN.position + new Vector3(0f, (float)_slotIndex * 0.25f, 0f);
+
+                        _PART.ClearDestination();
+                        _PART.transform.position = Vector3.Lerp(_PART_START_POS, _PART_END_POS, (factor - ANIM_RANGE_DELIVER) / (1f - ANIM_RANGE_DELIVER));
+                    }
+                }
+            }
+
+        }
+        storageBot.Destination = botDest;
+    }
+
+    #endregion
 
     private void OnDrawGizmos()
     {
@@ -870,11 +956,10 @@ public class Storage : MonoBehaviour
     }
     void Gizmos_DrawCell(Vector3 _cell_POS, Vector3 _cell_SIZE)
     {
-        //        Gizmos.DrawCube(_cell_POS + _cell_SIZE * 0.5f, _cell_SIZE);
-        //        Gizmos.DrawWireCube(_cell_POS, _cell_SIZE );
+        Gizmos.DrawCube(_cell_POS + _cell_SIZE * 0.5f, _cell_SIZE);
+        Gizmos.DrawWireCube(_cell_POS, _cell_SIZE);
         GizmoHelpers.DrawRect(colour, _cell_POS, _cell_SIZE.x, _cell_SIZE.y);
     }
-
 }
 
 public enum StorageState
